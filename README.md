@@ -5,7 +5,9 @@
 Extract & chart [Bitpanda Vision](http://vision.now) token yield analytics using
 The Graph Protocol.
 
-<https://vision-analytics.vercel.app>
+<https://bitpanda-vision-analytics.vercel.app>
+
+<img src="https://i.imgur.com/EHbYC2B.png" alt="Screenshot">
 
 ## Features
 
@@ -15,7 +17,7 @@ The Graph Protocol.
 
 ## Links
 
-- [Dashboard](https://vision-analytics.vercel.app)
+- [Dashboard](https://bitpanda-vision-analytics.vercel.app)
 - [Subgraph](https://thegraph.com/explorer/subgraphs/AFHGugzAJbgBSRvNnjEx4c1Wya5M4oMAWa5RsNnjQCrs)
 - [Subgraph Repository](https://github.com/AndreMiras/bitpanda-subgraphs)
 
