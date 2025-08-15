@@ -8,10 +8,11 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { YieldSnapshot } from "@/types/snapshots";
+import { ConvertedPerformanceSnapshot } from "@/types/snapshots";
+import { timestampToHumanReadable } from "@/lib/utils";
 
 interface PerformanceChartProps {
-  data: YieldSnapshot[];
+  data: ConvertedPerformanceSnapshot[];
 }
 
 export const PerformanceChart: React.FC<PerformanceChartProps> = ({ data }) => (
@@ -19,13 +20,10 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({ data }) => (
     <ResponsiveContainer width="100%" height="100%">
       <LineChart data={data}>
         <CartesianGrid strokeDasharray="3 3" />
-        <XAxis
-          dataKey="timestamp"
-          tickFormatter={(ts) => new Date(ts * 1000).toLocaleDateString()}
-        />
+        <XAxis dataKey="timestamp" tickFormatter={timestampToHumanReadable} />
         <YAxis yAxisId="exchange" domain={["auto", "auto"]} />
         <Tooltip
-          labelFormatter={(ts) => new Date(ts * 1000).toLocaleString()}
+          labelFormatter={timestampToHumanReadable}
           formatter={(value: number, name) => [
             name === "Exchange Rate"
               ? value.toFixed(4)
@@ -39,6 +37,7 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({ data }) => (
           type="monotone"
           dataKey="exchangeRate"
           stroke="#8884d8"
+          strokeWidth={2}
           name="Exchange Rate"
           dot={false}
         />

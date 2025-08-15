@@ -1,4 +1,4 @@
-import { YieldSnapshot } from "@/types/snapshots";
+import { ConvertedPerformanceSnapshot } from "@/types/snapshots";
 
 export const calculateAPY = (
   startRate: number,
@@ -11,16 +11,18 @@ export const calculateAPY = (
   return (Math.pow(1 + rateReturn, 1 / timeDiffInYears) - 1) * 100;
 };
 
-export const calculateCurrentAPY = (data: YieldSnapshot[]): number | null => {
+export const calculateCurrentAPY = (
+  data: ConvertedPerformanceSnapshot[],
+): number | null => {
   if (data.length < 2) return null;
 
   const firstPoint = data[0];
   const lastPoint = data[data.length - 1];
 
   return calculateAPY(
-    parseFloat(firstPoint.exchangeRate),
-    parseFloat(lastPoint.exchangeRate),
-    parseInt(firstPoint.timestamp),
-    parseInt(lastPoint.timestamp),
+    firstPoint.exchangeRate,
+    lastPoint.exchangeRate,
+    firstPoint.timestamp,
+    lastPoint.timestamp,
   );
 };

@@ -11,22 +11,15 @@ import {
 } from "@/components/ui/select";
 import { MetricCards } from "@/components/metrics/MetricCards";
 import { PerformanceChart } from "@/components/metrics/PerformanceChart";
-import { YieldSnapshot } from "@/types/snapshots";
+import { ConvertedPerformanceSnapshot } from "@/types/snapshots";
 import { calculateCurrentAPY } from "@/utils/apy";
+import { defaultTimeframe, timeframes } from "@/lib/utils";
 
-const timeframes = {
-  "1": "1 day",
-  "7": "7 days",
-  "30": "30 days",
-  "90": "90 days",
-  "365": "1 year",
-  max: "Max",
-} as const;
 type TimeframeKey = keyof typeof timeframes;
 
 export default function Home() {
-  const [timeframe, setTimeframe] = useState<TimeframeKey>("30");
-  const [data, setData] = useState<YieldSnapshot[]>([]);
+  const [timeframe, setTimeframe] = useState<TimeframeKey>(defaultTimeframe);
+  const [data, setData] = useState<ConvertedPerformanceSnapshot[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -41,10 +34,10 @@ export default function Home() {
         const json = await response.json();
         const rawData = json.data.yieldSnapshots;
 
-        const processedData: YieldSnapshot[] = rawData.map(
-          (snapshot: YieldSnapshot) => ({
-            timestamp: parseInt(snapshot.timestamp),
-            exchangeRate: parseFloat(snapshot.exchangeRate),
+        const processedData: ConvertedPerformanceSnapshot[] = rawData.map(
+          (snapshot: ConvertedPerformanceSnapshot) => ({
+            timestamp: snapshot.timestamp,
+            exchangeRate: snapshot.exchangeRate,
           }),
         );
         setData(processedData);

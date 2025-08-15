@@ -1,5 +1,24 @@
 import Link from "next/link";
-import { Github, LineChart } from "lucide-react";
+import { Github, LineChart, Lock, LucideIcon, TrendingUp } from "lucide-react";
+
+interface NavItem {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+}
+
+const navigationItems: NavItem[] = [
+  {
+    href: "/",
+    label: "Performance",
+    icon: TrendingUp,
+  },
+  {
+    href: "/tvl",
+    label: "Total Value Locked",
+    icon: Lock,
+  },
+];
 
 export const Header = () => (
   <header className="border-b bg-blue-100">
@@ -14,6 +33,23 @@ export const Header = () => (
             Bitpanda Vision Analytics
           </Link>
         </div>
+        {/* Main Navigation */}
+        <nav className="hidden md:flex items-center space-x-8">
+          {navigationItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+              >
+                <Icon size={16} />
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
+        {/* Right side nav */}
         <nav className="flex items-center gap-4">
           <Link
             href="https://github.com/AndreMiras/vision-analytics"

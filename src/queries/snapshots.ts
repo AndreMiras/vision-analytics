@@ -1,4 +1,4 @@
-const getYieldSnapshotsQuery = `
+const createYieldSnapshotsQuery = (fields: string[]) => `
   query getYieldSnapshots($startTime: BigInt!, $skip: Int!) {
     yieldSnapshots(
       first: 1000
@@ -7,10 +7,17 @@ const getYieldSnapshotsQuery = `
       orderDirection: asc
       where: { timestamp_gt: $startTime }
     ) {
-      exchangeRate
-      timestamp
+      ${fields.join("\n      ")}
     }
   }
 `;
 
-export default getYieldSnapshotsQuery;
+export const performanceQuery = createYieldSnapshotsQuery([
+  "exchangeRate",
+  "timestamp",
+]);
+export const tvlQuery = createYieldSnapshotsQuery([
+  "totalAssets",
+  "totalSupply",
+  "timestamp",
+]);

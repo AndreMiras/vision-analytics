@@ -1,4 +1,23 @@
-export interface YieldSnapshot {
-  exchangeRate: string;
+export interface BaseSnapshot {
   timestamp: string;
+}
+
+export interface PerformanceSnapshot extends BaseSnapshot {
+  exchangeRate: string;
+}
+
+export interface TVLSnapshot extends BaseSnapshot {
+  totalAssets: string;
+  totalSupply: string;
+}
+
+export interface ConvertedPerformanceSnapshot {
+  timestamp: number;
+  exchangeRate: number;
+}
+
+export interface ConvertedTVLSnapshot {
+  timestamp: number;
+  totalAssets: number;
+  totalSupply: number;
 }
