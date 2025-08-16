@@ -1,12 +1,12 @@
 import { TrendingUp, TrendingDown } from "lucide-react";
 import { MetricCard, MetricCardProps } from "@/components/metrics/MetricCard";
-import { toHumanReadable } from "@/lib/utils";
+import { formatUSDValue, toHumanReadable } from "@/lib/utils";
 
 interface TVLMetricCardsProps {
   currentTVL: number;
   tvlChange: number;
   allTimeHigh: number;
-  totalSupply: number;
+  currentPrice: number;
   timeframeDays: number | null;
   loading?: boolean;
 }
@@ -15,7 +15,7 @@ export const TVLMetricCards = ({
   currentTVL,
   tvlChange,
   allTimeHigh,
-  totalSupply,
+  currentPrice,
   timeframeDays,
   loading = false,
 }: TVLMetricCardsProps) => {
@@ -43,7 +43,14 @@ export const TVLMetricCards = ({
 
   const metrics: MetricCardProps[] = [
     {
-      value: `${toHumanReadable(currentTVL)} VSN`,
+      value: (
+        <div>
+          <div>{toHumanReadable(currentTVL)} VSN</div>
+          <div className="text-lg text-muted-foreground">
+            {formatUSDValue(currentTVL * currentPrice)}
+          </div>
+        </div>
+      ),
       label: "Current TVL",
     },
     {
@@ -51,17 +58,20 @@ export const TVLMetricCards = ({
       label: `${getTimeframeLabel()} Change`,
     },
     {
-      value: `${toHumanReadable(allTimeHigh)} VSN`,
+      value: (
+        <div>
+          <div>{toHumanReadable(allTimeHigh)} VSN</div>
+          <div className="text-lg text-muted-foreground">
+            {formatUSDValue(allTimeHigh * currentPrice)}
+          </div>
+        </div>
+      ),
       label: "All-time High",
-    },
-    {
-      value: `${toHumanReadable(totalSupply)} sVSN`,
-      label: "Total sVSN Supply",
     },
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+    <div className="grid grid-cols-3 gap-4 mb-6">
       {metrics.map((metric, index) => (
         <MetricCard key={index} value={metric.value} label={metric.label} />
       ))}

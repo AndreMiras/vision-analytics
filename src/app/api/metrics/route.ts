@@ -1,6 +1,7 @@
 import { strict as assert } from "assert";
 import { NextRequest, NextResponse } from "next/server";
 import { fetchPerformanceSnapshots, fetchTVLSnapshots } from "@/services/graph";
+import { fetchVSNPrice } from "@/services/price";
 
 type MetricType = "performance" | "tvl";
 
@@ -32,13 +33,17 @@ export async function POST(request: NextRequest) {
     : Math.floor(Date.now() / 1000) - timeframe * dayInSeconds;
   const fetchMetrics = metricFetchers[type as keyof typeof metricFetchers];
   assert(fetchMetrics, `No fetcher found for type: ${type}`);
-  const yieldSnapshots = await fetchMetrics(queryUrl, startTime);
+  const [yieldSnapshots, currentPrice] = await Promise.all([
+    fetchMetrics(queryUrl, startTime),
+    fetchVSNPrice(),
+  ]);
 
   return NextResponse.json({
     data: {
-      yieldSnapshots,
-      type,
+      currentPrice,
       timeframe,
+      type,
+      yieldSnapshots,
     },
   });
 }

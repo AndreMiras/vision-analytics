@@ -18,7 +18,10 @@ type TimeframeKey = keyof typeof timeframes;
 
 export default function TVLPage() {
   const [timeframe, setTimeframe] = useState<TimeframeKey>(defaultTimeframe);
-  const [data, setData] = useState<ConvertedTVLSnapshot[]>([]);
+  const [yieldSnapshots, setYieldSnapshots] = useState<ConvertedTVLSnapshot[]>(
+    [],
+  );
+  const [currentPrice, setCurrentPrice] = useState<number>(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -36,16 +39,8 @@ export default function TVLPage() {
         });
 
         const json = await response.json();
-        const rawData = json.data.yieldSnapshots;
-
-        const processedData: ConvertedTVLSnapshot[] = rawData.map(
-          (snapshot: ConvertedTVLSnapshot) => ({
-            timestamp: snapshot.timestamp,
-            totalAssets: snapshot.totalAssets,
-            totalSupply: snapshot.totalSupply,
-          }),
-        );
-        setData(processedData);
+        setYieldSnapshots(json.data.yieldSnapshots);
+        setCurrentPrice(json.data.currentPrice);
       } catch (error) {
         console.error("Error fetching TVL data:", error);
       } finally {
@@ -57,11 +52,10 @@ export default function TVLPage() {
   }, [timeframe]);
 
   // Calculate metrics from data
-  const latestSnapshot = data[data.length - 1];
-  const oldestSnapshot = data[0];
+  const latestSnapshot = yieldSnapshots[yieldSnapshots.length - 1];
+  const oldestSnapshot = yieldSnapshots[0];
 
   const currentTVL = latestSnapshot?.totalAssets || 0;
-  const currentTotalSupply = latestSnapshot?.totalSupply || 0;
 
   // Calculate percentage change over the timeframe
   const tvlChange =
@@ -72,7 +66,9 @@ export default function TVLPage() {
       : 0;
 
   // Calculate all-time high (you might want to fetch this separately or maintain it)
-  const allTimeHigh = Math.max(...data.map((d) => Number(d.totalAssets)));
+  const allTimeHigh = Math.max(
+    ...yieldSnapshots.map((d) => Number(d.totalAssets)),
+  );
 
   return (
     <main>
@@ -99,14 +95,14 @@ export default function TVLPage() {
         </CardHeader>
         <CardContent>
           <TVLMetricCards
-            currentTVL={Number(currentTVL)}
-            tvlChange={Number(tvlChange)}
+            currentTVL={currentTVL}
+            tvlChange={tvlChange}
             allTimeHigh={allTimeHigh}
-            totalSupply={Number(currentTotalSupply)}
+            currentPrice={currentPrice}
             timeframeDays={timeframe === "max" ? null : parseInt(timeframe)}
             loading={loading}
           />
-          <TVLChart data={data} loading={loading} />
+          <TVLChart data={yieldSnapshots} loading={loading} />
         </CardContent>
       </Card>
     </main>
