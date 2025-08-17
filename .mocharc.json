@@ -1,0 +1,5 @@
+{
+  "require": ["tsx/cjs"],
+  "spec": "src/**/*.test.ts",
+  "recursive": true
+}

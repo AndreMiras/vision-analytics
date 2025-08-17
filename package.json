@@ -9,7 +9,8 @@
     "start": "next start",
     "lint:next": "next lint",
     "lint:prettier": "prettier --check .",
-    "lint": "npm run lint:next && npm run lint:prettier"
+    "lint": "npm run lint:next && npm run lint:prettier",
+    "test": "mocha"
   },
   "dependencies": {
     "@radix-ui/react-select": "^2.2.5",
@@ -26,13 +27,16 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4.1.11",
+    "@types/mocha": "^10.0.10",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.4.6",
+    "mocha": "^11.7.1",
     "prettier": "^3.6.2",
     "tailwindcss": "^4.1.11",
+    "tsx": "^4.20.4",
     "tw-animate-css": "^1.3.6",
     "typescript": "^5"
   }

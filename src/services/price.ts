@@ -1,3 +1,5 @@
+import { toSeconds } from "@/utils/time";
+
 interface LiveCoinWatchResponse {
   rate: number;
   volume: number;
@@ -26,6 +28,10 @@ export const fetchVSNPrice = async (): Promise<number> => {
       code: "_VSN",
       meta: false,
     }),
+    next: {
+      revalidate: toSeconds.fromHours(1),
+      tags: ["vsn-price"],
+    },
   });
   const data: LiveCoinWatchResponse = await response.json();
   return data.rate;
