@@ -1,6 +1,10 @@
 import { strict as assert } from "assert";
 import { NextRequest, NextResponse } from "next/server";
-import { fetchPerformanceSnapshots, fetchTVLSnapshots } from "@/services/graph";
+import {
+  fetchPerformanceSnapshots,
+  fetchTVLSnapshots,
+  getSubgraphUrl,
+} from "@/services/graph";
 import { fetchVSNPrice } from "@/services/price";
 
 type MetricType = "performance" | "tvl";
@@ -24,9 +28,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const apiKey = process.env.THE_GRAPH_API_KEY;
-  const subgraphId = "AFHGugzAJbgBSRvNnjEx4c1Wya5M4oMAWa5RsNnjQCrs";
-  const queryUrl = `https://gateway.thegraph.com/api/${apiKey}/subgraphs/id/${subgraphId}`;
+  const queryUrl = getSubgraphUrl();
   const dayInSeconds = 24 * 60 * 60;
   const startTime = isNaN(timeframe)
     ? 1

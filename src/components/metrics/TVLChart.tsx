@@ -8,9 +8,10 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { timestampToHumanReadable, toHumanReadable } from "@/lib/utils";
+import { toHumanReadable } from "@/lib/utils";
+import { timestampToHumanReadable } from "@/utils/time";
 import { ConvertedTVLSnapshot } from "@/types/snapshots";
-import { TVLChartEmpty } from "@/components/metrics/TVLChartEmpty";
+import { ChartEmpty } from "@/components/metrics/ChartEmpty";
 
 interface TVLChartProps {
   data: ConvertedTVLSnapshot[];
@@ -24,11 +25,11 @@ export const TVLChart = ({ data, loading = false }: TVLChartProps) => {
   ];
 
   if (loading) {
-    return <TVLChartEmpty>loading chart...</TVLChartEmpty>;
+    return <ChartEmpty>loading chart...</ChartEmpty>;
   }
 
   if (data.length === 0) {
-    return <TVLChartEmpty>No data available</TVLChartEmpty>;
+    return <ChartEmpty>No data available</ChartEmpty>;
   }
 
   return (

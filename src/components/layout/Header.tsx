@@ -1,5 +1,12 @@
 import Link from "next/link";
-import { Github, LineChart, Lock, LucideIcon, TrendingUp } from "lucide-react";
+import {
+  Clock,
+  Github,
+  LineChart,
+  Lock,
+  LucideIcon,
+  TrendingUp,
+} from "lucide-react";
 
 interface NavItem {
   href: string;
@@ -17,6 +24,11 @@ const navigationItems: NavItem[] = [
     href: "/tvl",
     label: "Total Value Locked",
     icon: Lock,
+  },
+  {
+    href: "/unstaking",
+    label: "Pending Unstaking",
+    icon: Clock,
   },
 ];
 

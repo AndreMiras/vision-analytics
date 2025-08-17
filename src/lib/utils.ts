@@ -22,13 +22,6 @@ export const fromWeiToToken = (weiAmount: string): number =>
 export const toHumanReadable = (value: number) =>
   new Intl.NumberFormat("en", { notation: "compact" }).format(value);
 
-export const timestampToHumanReadable = (unixTimestamp: number) =>
-  new Date(unixTimestamp * 1000).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-
 export const formatUSDValue = (value: number) =>
   new Intl.NumberFormat("en-US", {
     style: "currency",

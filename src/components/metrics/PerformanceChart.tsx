@@ -9,7 +9,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { ConvertedPerformanceSnapshot } from "@/types/snapshots";
-import { timestampToHumanReadable } from "@/lib/utils";
+import { timestampToHumanReadable } from "@/utils/time";
 
 interface PerformanceChartProps {
   data: ConvertedPerformanceSnapshot[];

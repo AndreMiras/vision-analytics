@@ -1,5 +1,5 @@
 import assert from "node:assert";
-import { toSeconds, toMilliseconds } from "@/utils/time";
+import { formatRelativeTime, toSeconds, toMilliseconds } from "@/utils/time";
 
 describe("time", () => {
   describe("toSeconds", () => {
@@ -40,6 +40,43 @@ describe("time", () => {
 
     it("should convert days to milliseconds", () => {
       assert.strictEqual(toMilliseconds.fromDays(1), 86400000);
+    });
+  });
+
+  describe("formatRelativeTime", () => {
+    const ref = new Date("2025-08-18T12:00:00Z");
+    const dayMs = 1000 * 60 * 60 * 24;
+
+    it("Today: same moment", () => {
+      assert.equal(formatRelativeTime(new Date(ref), ref), "Today");
+    });
+
+    it("Today: earlier on same day (small negative -> ceil to 0)", () => {
+      const ts = new Date("2025-08-18T11:00:00Z");
+      assert.equal(formatRelativeTime(ts, ref), "Today");
+    });
+
+    it("Tomorrow: +1 second", () => {
+      const ts = new Date("2025-08-18T12:00:01Z");
+      assert.equal(formatRelativeTime(ts, ref), "Tomorrow");
+    });
+
+    it("Past due: at least one full day behind", () => {
+      const ts = new Date("2025-08-17T11:59:00Z"); // < -1 day
+      assert.equal(formatRelativeTime(ts, ref), "Past due");
+    });
+
+    for (let d = 2; d <= 6; d++) {
+      it(`${d} days: exactly +${d} days`, () => {
+        const later = new Date(ref.getTime() + d * dayMs);
+        assert.equal(formatRelativeTime(later, ref), `${d} days`);
+      });
+    }
+
+    it("7+ days: returns localized date string (exactly +7 days)", () => {
+      const later = new Date(ref.getTime() + 7 * dayMs);
+      const expected = "Aug 25, 2025";
+      assert.equal(formatRelativeTime(later, ref), expected);
     });
   });
 });
