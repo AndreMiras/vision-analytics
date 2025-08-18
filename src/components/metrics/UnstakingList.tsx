@@ -1,4 +1,4 @@
-import { Clock } from "lucide-react";
+import { Clock, ExternalLink } from "lucide-react";
 import { ConvertedUnstakingSnapshot } from "@/types/snapshots";
 import { toLocaleDateStringFormat } from "@/utils/time";
 
@@ -44,6 +44,12 @@ export const UnstakingList = ({
       return `${diffMinutes}m`;
     }
   };
+
+  const formatTxHash = (hash: string) =>
+    `${hash.slice(0, 6)}...${hash.slice(-4)}`;
+
+  const getEtherscanUrl = (txHash: string) =>
+    `https://etherscan.io/tx/${txHash}`;
 
   if (loading) {
     return (
@@ -94,8 +100,18 @@ export const UnstakingList = ({
               <div className="font-medium">
                 {formatTokenAmount(item.shares)} sVSN
               </div>
-              <div className="text-sm text-gray-600">
-                Started: {formatDate(item.blockTimestamp)}
+              <div className="text-sm text-gray-600 flex items-center gap-2">
+                <span>Started: {formatDate(item.blockTimestamp)}</span>
+                <a
+                  href={getEtherscanUrl(item.transactionHash)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors"
+                  title="View transaction on Etherscan"
+                >
+                  <span>{formatTxHash(item.transactionHash)}</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
               </div>
             </div>
           </div>

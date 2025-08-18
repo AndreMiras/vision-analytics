@@ -13,8 +13,9 @@ export interface TVLSnapshot extends BaseSnapshot {
 
 export interface UnstakingSnapshot {
   blockTimestamp: string;
-  shares: string;
   cooldownEnd: string;
+  shares: string;
+  transactionHash: string;
 }
 
 export interface ConvertedPerformanceSnapshot {
@@ -32,4 +33,5 @@ export interface ConvertedUnstakingSnapshot {
   blockTimestamp: number;
   cooldownEnd: number;
   shares: number;
+  transactionHash: string;
 }

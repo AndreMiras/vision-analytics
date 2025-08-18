@@ -53,6 +53,7 @@ const convertPerformanceSnapshot = (
 const convertUnstakingSnapshot = (
   snapshot: UnstakingSnapshot,
 ): ConvertedUnstakingSnapshot => ({
+  ...snapshot,
   blockTimestamp: parseInt(snapshot.blockTimestamp),
   shares: fromWeiToToken(snapshot.shares),
   cooldownEnd: parseInt(snapshot.cooldownEnd),

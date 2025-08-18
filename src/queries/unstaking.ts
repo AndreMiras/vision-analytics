@@ -7,8 +7,9 @@ export const unstakingQuery = `
       orderDirection: asc
     ) {
       blockTimestamp
-      shares
       cooldownEnd
+      shares
+      transactionHash
     }
   }
 `;
