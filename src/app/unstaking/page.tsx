@@ -91,7 +91,11 @@ export default function UnstakingPage() {
             nextUnlock={nextUnlock}
             loading={loading}
           />
-          <UnstakingChart data={chartData} loading={loading} />
+          <UnstakingChart
+            currentPrice={currentPrice}
+            data={chartData}
+            loading={loading}
+          />
         </CardContent>
       </Card>
 
