@@ -30,14 +30,8 @@ export const UnstakingMetricCards = ({
 
   const metrics: MetricCardProps[] = [
     {
-      value: (
-        <div>
-          <div>{formatTokenAmount(totalPending)} sVSN</div>
-          <div className="text-lg text-muted-foreground">
-            {formatUSDValue(totalPending * currentPrice)}
-          </div>
-        </div>
-      ),
+      value: `${formatTokenAmount(totalPending)} sVSN`,
+      secondaryValue: formatUSDValue(totalPending * currentPrice),
       label: "Total Pending",
     },
     {
@@ -53,7 +47,12 @@ export const UnstakingMetricCards = ({
   return (
     <div className="grid grid-cols-3 gap-4 mb-6">
       {metrics.map((metric, index) => (
-        <MetricCard key={index} value={metric.value} label={metric.label} />
+        <MetricCard
+          key={index}
+          value={metric.value}
+          label={metric.label}
+          secondaryValue={metric.secondaryValue}
+        />
       ))}
     </div>
   );

@@ -43,14 +43,8 @@ export const TVLMetricCards = ({
 
   const metrics: MetricCardProps[] = [
     {
-      value: (
-        <div>
-          <div>{toHumanReadable(currentTVL)} VSN</div>
-          <div className="text-lg text-muted-foreground">
-            {formatUSDValue(currentTVL * currentPrice)}
-          </div>
-        </div>
-      ),
+      value: `${toHumanReadable(currentTVL)} VSN`,
+      secondaryValue: formatUSDValue(currentTVL * currentPrice),
       label: "Current TVL",
     },
     {
@@ -58,14 +52,8 @@ export const TVLMetricCards = ({
       label: `${getTimeframeLabel()} Change`,
     },
     {
-      value: (
-        <div>
-          <div>{toHumanReadable(allTimeHigh)} VSN</div>
-          <div className="text-lg text-muted-foreground">
-            {formatUSDValue(allTimeHigh * currentPrice)}
-          </div>
-        </div>
-      ),
+      value: `${toHumanReadable(allTimeHigh)} VSN`,
+      secondaryValue: formatUSDValue(allTimeHigh * currentPrice),
       label: "All-time High",
     },
   ];
@@ -73,7 +61,12 @@ export const TVLMetricCards = ({
   return (
     <div className="grid grid-cols-3 gap-4 mb-6">
       {metrics.map((metric, index) => (
-        <MetricCard key={index} value={metric.value} label={metric.label} />
+        <MetricCard
+          key={index}
+          value={metric.value}
+          label={metric.label}
+          secondaryValue={metric.secondaryValue}
+        />
       ))}
     </div>
   );
