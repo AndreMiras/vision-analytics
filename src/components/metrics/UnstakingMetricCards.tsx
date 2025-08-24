@@ -1,6 +1,6 @@
-import { Card, CardContent } from "@/components/ui/card";
 import { formatUSDValue, toHumanReadable } from "@/lib/utils";
 import { formatRelativeTime } from "@/utils/time";
+import { MetricCard, MetricCardProps } from "./MetricCard";
 
 interface UnstakingMetricCardsProps {
   currentPrice: number;
@@ -9,20 +9,6 @@ interface UnstakingMetricCardsProps {
   nextUnlock: number | null;
   loading?: boolean;
 }
-
-interface MetricCardProps {
-  value: string | React.ReactNode;
-  label: string;
-}
-
-const MetricCard = ({ value, label }: MetricCardProps) => (
-  <Card>
-    <CardContent className="pt-6">
-      <div className="text-2xl font-bold">{value}</div>
-      <div className="text-sm text-muted-foreground">{label}</div>
-    </CardContent>
-  </Card>
-);
 
 export const UnstakingMetricCards = ({
   currentPrice,
