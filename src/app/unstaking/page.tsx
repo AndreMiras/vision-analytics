@@ -8,7 +8,10 @@ import { UnstakingList } from "@/components/metrics/UnstakingList";
 import { ConvertedUnstakingSnapshot } from "@/types/snapshots";
 
 export default function UnstakingPage() {
-  const [data, setData] = useState<ConvertedUnstakingSnapshot[]>([]);
+  const [unstakingSnapshots, setUnstakingSnapshots] = useState<
+    ConvertedUnstakingSnapshot[]
+  >([]);
+  const [currentPrice, setCurrentPrice] = useState<number>(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -23,7 +26,8 @@ export default function UnstakingPage() {
         });
 
         const json = await response.json();
-        setData(json.data.unstakingSnapshots);
+        setUnstakingSnapshots(json.data.unstakingSnapshots);
+        setCurrentPrice(json.data.currentPrice);
       } catch (error) {
         console.error("Error fetching unstaking data:", error);
       } finally {
@@ -36,7 +40,9 @@ export default function UnstakingPage() {
 
   // Filter for pending cooldowns (not yet unlocked)
   const now = Math.floor(Date.now() / 1000);
-  const pendingCooldowns = data.filter((item) => item.cooldownEnd > now);
+  const pendingCooldowns = unstakingSnapshots.filter(
+    (item) => item.cooldownEnd > now,
+  );
 
   // Calculate metrics
   const totalPending = pendingCooldowns.reduce(
@@ -79,6 +85,7 @@ export default function UnstakingPage() {
         </CardHeader>
         <CardContent>
           <UnstakingMetricCards
+            currentPrice={currentPrice}
             totalPending={totalPending}
             activeCooldowns={pendingCooldowns.length}
             nextUnlock={nextUnlock}

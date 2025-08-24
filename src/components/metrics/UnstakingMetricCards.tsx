@@ -1,8 +1,9 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { toHumanReadable } from "@/lib/utils";
+import { formatUSDValue, toHumanReadable } from "@/lib/utils";
 import { formatRelativeTime } from "@/utils/time";
 
 interface UnstakingMetricCardsProps {
+  currentPrice: number;
   totalPending: number;
   activeCooldowns: number;
   nextUnlock: number | null;
@@ -24,6 +25,7 @@ const MetricCard = ({ value, label }: MetricCardProps) => (
 );
 
 export const UnstakingMetricCards = ({
+  currentPrice,
   totalPending,
   activeCooldowns,
   nextUnlock,
@@ -42,7 +44,14 @@ export const UnstakingMetricCards = ({
 
   const metrics: MetricCardProps[] = [
     {
-      value: `${formatTokenAmount(totalPending)} sVSN`,
+      value: (
+        <div>
+          <div>{formatTokenAmount(totalPending)} sVSN</div>
+          <div className="text-lg text-muted-foreground">
+            {formatUSDValue(totalPending * currentPrice)}
+          </div>
+        </div>
+      ),
       label: "Total Pending",
     },
     {

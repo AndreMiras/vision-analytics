@@ -10,6 +10,8 @@
     "lint:next": "next lint",
     "lint:prettier": "prettier --check .",
     "lint": "npm run lint:next && npm run lint:prettier",
+    "format:prettier": "prettier --write .",
+    "format": "npm run format:prettier",
     "test": "mocha"
   },
   "dependencies": {
