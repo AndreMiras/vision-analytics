@@ -105,6 +105,7 @@ export default function UnstakingPage() {
         </CardHeader>
         <CardContent>
           <UnstakingList
+            currentPrice={currentPrice}
             data={pendingCooldowns.slice(0, 10)}
             loading={loading}
           />

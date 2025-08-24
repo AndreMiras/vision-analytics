@@ -1,14 +1,17 @@
 import { Clock, ExternalLink } from "lucide-react";
 import { ConvertedUnstakingSnapshot } from "@/types/snapshots";
 import { toLocaleDateStringFormat } from "@/utils/time";
+import { formatUSDValue } from "@/lib/utils";
 
 interface UnstakingListProps {
   data: ConvertedUnstakingSnapshot[];
+  currentPrice: number;
   loading?: boolean;
 }
 
 export const UnstakingList = ({
   data,
+  currentPrice,
   loading = false,
 }: UnstakingListProps) => {
   const formatTokenAmount = (value: number) => {
@@ -98,7 +101,8 @@ export const UnstakingList = ({
             <Clock className="w-5 h-5 text-amber-500" />
             <div>
               <div className="font-medium">
-                {formatTokenAmount(item.shares)} sVSN
+                {formatTokenAmount(item.shares)} sVSN (
+                {formatUSDValue(item.shares * currentPrice)})
               </div>
               <div className="text-sm text-gray-600 flex items-center gap-2">
                 <span>Started: {formatDate(item.blockTimestamp)}</span>
