@@ -102,7 +102,11 @@ export default function TVLPage() {
             timeframeDays={timeframe === "max" ? null : parseInt(timeframe)}
             loading={loading}
           />
-          <TVLChart data={yieldSnapshots} loading={loading} />
+          <TVLChart
+            currentPrice={currentPrice}
+            tvlSnapshots={yieldSnapshots}
+            loading={loading}
+          />
         </CardContent>
       </Card>
     </main>
