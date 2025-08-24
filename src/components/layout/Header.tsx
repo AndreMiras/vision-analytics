@@ -5,6 +5,7 @@ import {
   LineChart,
   Lock,
   LucideIcon,
+  PieChart,
   TrendingUp,
 } from "lucide-react";
 
@@ -24,6 +25,11 @@ const navigationItems: NavItem[] = [
     href: "/tvl",
     label: "Total Value Locked",
     icon: Lock,
+  },
+  {
+    href: "/staking-overview",
+    label: "Staking Overview",
+    icon: PieChart,
   },
   {
     href: "/unstaking",

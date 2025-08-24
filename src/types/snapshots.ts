@@ -35,3 +35,11 @@ export interface ConvertedUnstakingSnapshot {
   shares: number;
   transactionHash: string;
 }
+
+export interface SupplySnapshot {
+  id: string;
+  totalSupply: string;
+  timestamp: string;
+  blockNumber: string;
+  eventType?: string;
+}

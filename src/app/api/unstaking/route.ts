@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { fetchUnstakingSnapshots, getSubgraphUrl } from "@/services/graph";
+import { fetchUnstakingSnapshots, getSvsnSubgraphUrl } from "@/services/graph";
 import { fetchVSNPrice } from "@/services/price";
 
 export async function POST() {
-  const queryUrl = getSubgraphUrl();
+  const queryUrl = getSvsnSubgraphUrl();
 
   const [unstakingSnapshots, currentPrice] = await Promise.all([
     fetchUnstakingSnapshots(queryUrl),

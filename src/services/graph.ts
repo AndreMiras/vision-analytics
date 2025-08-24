@@ -5,11 +5,17 @@ import {
   ConvertedTVLSnapshot,
   ConvertedUnstakingSnapshot,
   PerformanceSnapshot,
+  SupplySnapshot,
   TVLSnapshot,
   UnstakingSnapshot,
 } from "@/types/snapshots";
-import { performanceQuery, tvlQuery } from "@/queries/snapshots";
+import {
+  performanceQuery,
+  stakedVisionTotalSupplyQuery,
+  tvlQuery,
+} from "@/queries/snapshots";
 import { unstakingQuery } from "@/queries/unstaking";
+import { latestSupplyQuery } from "@/queries/supply";
 
 // The Graph's maximum page size
 const PAGE_SIZE = 1000;
@@ -26,12 +32,22 @@ interface UnstakingResponse {
   };
 }
 
-export const getSubgraphUrl = () => {
+interface LatestSupplyResponse {
+  data: {
+    supplySnapshots: SupplySnapshot[];
+  };
+}
+
+export const getSubgraphUrl = (subgraphId?: string) => {
   const apiKey = process.env.THE_GRAPH_API_KEY;
-  const subgraphId = process.env.SUBGRAPH_ID;
   const url = `https://gateway.thegraph.com/api/${apiKey}/subgraphs/id/${subgraphId}`;
   return url;
 };
+
+export const getSvsnSubgraphUrl = () =>
+  getSubgraphUrl(process.env.SVSN_SUBGRAPH_ID);
+export const getVsnSubgraphUrl = () =>
+  getSubgraphUrl(process.env.VSN_SUBGRAPH_ID);
 
 const convertBaseSnapshot = (snapshot: BaseSnapshot) => ({
   timestamp: parseInt(snapshot.timestamp),
@@ -174,4 +190,40 @@ const fetchUnstakingPage = async (
 
   const json = (await response.json()) as UnstakingResponse;
   return json.data.cooldownStarteds;
+};
+
+export const fetchTotalVisionSupply = async (
+  queryUrl: string,
+): Promise<number> => {
+  const response = await fetch(queryUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ query: latestSupplyQuery }),
+  });
+
+  const json = (await response.json()) as LatestSupplyResponse;
+
+  if (json.data.supplySnapshots.length > 0) {
+    const latestSnapshot = json.data.supplySnapshots[0];
+    return fromWeiToToken(latestSnapshot.totalSupply);
+  }
+  console.warn("No supply data found in subgraph");
+  return 0;
+};
+
+export const fetchStakedVision = async (queryUrl: string): Promise<number> => {
+  const response = await fetch(queryUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ query: stakedVisionTotalSupplyQuery }),
+  });
+
+  const json = await response.json();
+
+  if (json.data.yieldSnapshots && json.data.yieldSnapshots.length > 0) {
+    const latestSnapshot = json.data.yieldSnapshots[0];
+    return fromWeiToToken(latestSnapshot.totalSupply);
+  }
+  console.warn("No staked VISION data found in subgraph");
+  return 0;
 };

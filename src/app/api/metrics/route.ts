@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   fetchPerformanceSnapshots,
   fetchTVLSnapshots,
-  getSubgraphUrl,
+  getSvsnSubgraphUrl,
 } from "@/services/graph";
 import { fetchVSNPrice } from "@/services/price";
 
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const queryUrl = getSubgraphUrl();
+  const queryUrl = getSvsnSubgraphUrl();
   const dayInSeconds = 24 * 60 * 60;
   const startTime = isNaN(timeframe)
     ? 1
