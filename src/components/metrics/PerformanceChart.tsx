@@ -1,12 +1,12 @@
 import {
-  LineChart,
+  CartesianGrid,
+  Legend,
   Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
 } from "recharts";
 import { ConvertedPerformanceSnapshot } from "@/types/snapshots";
 import { timestampToHumanReadable } from "@/utils/time";

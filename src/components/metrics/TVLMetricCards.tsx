@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown } from "lucide-react";
+import { TrendingDown, TrendingUp } from "lucide-react";
 import { MetricCard, MetricCardProps } from "@/components/metrics/MetricCard";
 import { formatUSDValue, toHumanReadable } from "@/lib/utils";
 
@@ -24,7 +24,9 @@ export const TVLMetricCards = ({
     const isPositive = value >= 0;
     return (
       <div
-        className={`flex items-center gap-1 ${isPositive ? "text-green-600" : "text-red-600"}`}
+        className={`flex items-center gap-1 ${
+          isPositive ? "text-green-600" : "text-red-600"
+        }`}
       >
         {isPositive ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
         <span>

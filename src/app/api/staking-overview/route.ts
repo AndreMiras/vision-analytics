@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { fetchVSNPrice } from "@/services/price";
 import {
-  fetchTotalVisionSupply,
   fetchStakedVision,
-  getVsnSubgraphUrl,
+  fetchTotalVisionSupply,
   getSvsnSubgraphUrl,
+  getVsnSubgraphUrl,
 } from "@/services/graph";
 
 export async function POST() {

@@ -1,5 +1,5 @@
 import assert from "node:assert";
-import { formatRelativeTime, toSeconds, toMilliseconds } from "@/utils/time";
+import { formatRelativeTime, toMilliseconds, toSeconds } from "@/utils/time";
 
 describe("time", () => {
   describe("toSeconds", () => {
