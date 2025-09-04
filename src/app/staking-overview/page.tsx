@@ -4,11 +4,21 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StakingChart } from "@/components/metrics/StakingChart";
 import { StakingMetricCards } from "@/components/metrics/StakingMetricCards";
+import { HistoricalStakingRatioChart } from "@/components/metrics/HistoricalStakingRatioChart";
 
 interface StakingData {
   totalVisionSupply: number;
   stakedVision: number;
   currentPrice: number;
+}
+
+interface StakingRatioDataPoint {
+  timestamp: number;
+  date: string;
+  stakingRatio: number;
+  totalSupply: number;
+  stakedAmount: number;
+  unstakedAmount: number;
 }
 
 export default function StakingOverviewPage() {
@@ -17,12 +27,14 @@ export default function StakingOverviewPage() {
     stakedVision: 0,
     currentPrice: 0,
   });
-  const [loading, setLoading] = useState(true);
+  const [historyData, setHistoryData] = useState<StakingRatioDataPoint[]>([]);
+  const [overviewLoading, setOverviewLoading] = useState(true);
+  const [historyLoading, setHistoryLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchCurrentData = async () => {
       try {
-        setLoading(true);
+        setOverviewLoading(true);
         const queryUrl = "/api/staking-overview";
         const response = await fetch(queryUrl, {
           method: "POST",
@@ -39,11 +51,31 @@ export default function StakingOverviewPage() {
       } catch (error) {
         console.error("Error fetching staking overview data:", error);
       } finally {
-        setLoading(false);
+        setOverviewLoading(false);
       }
     };
 
-    fetchData();
+    const fetchHistoryData = async () => {
+      try {
+        setHistoryLoading(true);
+        const response = await fetch("/api/staking-history", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ daysBack: 30 }),
+        });
+
+        const json = await response.json();
+        setHistoryData(json.data || []);
+      } catch (error) {
+        console.error("Error fetching staking history data:", error);
+        setHistoryData([]);
+      } finally {
+        setHistoryLoading(false);
+      }
+    };
+
+    fetchCurrentData();
+    fetchHistoryData();
   }, []);
 
   const unstakedVision =
@@ -52,6 +84,32 @@ export default function StakingOverviewPage() {
     stakingData.totalVisionSupply > 0
       ? (stakingData.stakedVision / stakingData.totalVisionSupply) * 100
       : 0;
+
+  const chartSections = [
+    {
+      id: "current-ratio",
+      title: "Current Staking Ratio",
+      component: (
+        <StakingChart
+          stakedVision={stakingData.stakedVision}
+          unstakedVision={unstakedVision}
+          currentPrice={stakingData.currentPrice}
+          loading={overviewLoading}
+        />
+      ),
+    },
+    {
+      id: "historical-ratio",
+      title: "Staking Ratio Over Time",
+      component: (
+        <HistoricalStakingRatioChart
+          data={historyData}
+          loading={historyLoading}
+          currentPrice={stakingData.currentPrice}
+        />
+      ),
+    },
+  ];
 
   return (
     <main>
@@ -66,14 +124,16 @@ export default function StakingOverviewPage() {
             stakedVision={stakingData.stakedVision}
             unstakedVision={unstakedVision}
             stakingRatio={stakingRatio}
-            loading={loading}
+            loading={overviewLoading}
           />
-          <StakingChart
-            stakedVision={stakingData.stakedVision}
-            unstakedVision={unstakedVision}
-            currentPrice={stakingData.currentPrice}
-            loading={loading}
-          />
+          <div className="space-y-8">
+            {chartSections.map((section) => (
+              <div key={section.id}>
+                <h3 className="text-lg font-semibold mb-4">{section.title}</h3>
+                {section.component}
+              </div>
+            ))}
+          </div>
         </CardContent>
       </Card>
     </main>

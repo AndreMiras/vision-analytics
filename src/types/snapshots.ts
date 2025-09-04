@@ -43,3 +43,19 @@ export interface SupplySnapshot {
   blockNumber: string;
   eventType?: string;
 }
+
+export interface StakingSnapshot extends BaseSnapshot {
+  totalSupply: string;
+}
+
+export interface SupplyOverTimeResponse {
+  data: {
+    supplySnapshots: SupplySnapshot[];
+  };
+}
+
+export interface StakingHistoryResponse {
+  data: {
+    yieldSnapshots: StakingSnapshot[];
+  };
+}

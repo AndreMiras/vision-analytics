@@ -5,6 +5,8 @@ import {
   ConvertedTVLSnapshot,
   ConvertedUnstakingSnapshot,
   PerformanceSnapshot,
+  StakingHistoryResponse,
+  SupplyOverTimeResponse,
   SupplySnapshot,
   TVLSnapshot,
   UnstakingSnapshot,
@@ -15,7 +17,7 @@ import {
   tvlQuery,
 } from "@/queries/snapshots";
 import { unstakingQuery } from "@/queries/unstaking";
-import { latestSupplyQuery } from "@/queries/supply";
+import { latestSupplyQuery, supplyOverTimeQuery } from "@/queries/supply";
 
 // The Graph's maximum page size
 const PAGE_SIZE = 1000;
@@ -36,6 +38,15 @@ interface LatestSupplyResponse {
   data: {
     supplySnapshots: SupplySnapshot[];
   };
+}
+
+interface StakingRatioDataPoint {
+  timestamp: number;
+  date: string;
+  stakingRatio: number;
+  totalSupply: number;
+  stakedAmount: number;
+  unstakedAmount: number;
 }
 
 export const getSubgraphUrl = (subgraphId?: string) => {
@@ -146,7 +157,11 @@ export const fetchPerformanceSnapshots = async (
 
 export const fetchTVLSnapshots = async (queryUrl: string, startTime: number) =>
   (
-    await fetchAllYieldSnapshots<TVLSnapshot>(queryUrl, tvlQuery, startTime)
+    await fetchAllYieldSnapshots<TVLSnapshot>(
+      queryUrl,
+      tvlQuery(false),
+      startTime,
+    )
   ).map(convertTVLSnapshot);
 
 export const fetchUnstakingSnapshots = async (
@@ -226,4 +241,109 @@ export const fetchStakedVision = async (queryUrl: string): Promise<number> => {
   }
   console.warn("No staked VISION data found in subgraph");
   return 0;
+};
+
+export const fetchStakingRatioHistory = async (
+  visionSubgraphUrl: string,
+  stakingSubgraphUrl: string,
+  daysBack: number = 30,
+): Promise<StakingRatioDataPoint[]> => {
+  const endTime = Math.floor(Date.now() / 1000);
+  const startTime = endTime - daysBack * 24 * 60 * 60;
+
+  // Fetch supply data from VISION subgraph
+  const supplyOverTimeBody = JSON.stringify({
+    query: supplyOverTimeQuery,
+    variables: {
+      startTime: startTime.toString(),
+      endTime: endTime.toString(),
+    },
+  });
+  const supplyResponse = await fetch(visionSubgraphUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: supplyOverTimeBody,
+  });
+
+  // Fetch staking data from staking subgraph
+  const stakingHistoryBody = JSON.stringify({
+    query: tvlQuery(true),
+    variables: {
+      startTime: startTime.toString(),
+      endTime: endTime.toString(),
+    },
+  });
+  const stakingResponse = await fetch(stakingSubgraphUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: stakingHistoryBody,
+  });
+
+  const [supplyJson, stakingJson] = await Promise.all([
+    supplyResponse.json() as Promise<SupplyOverTimeResponse>,
+    stakingResponse.json() as Promise<StakingHistoryResponse>,
+  ]);
+
+  // Convert to maps for efficient lookup
+  const supplyByTimestamp = new Map<number, number>();
+  const stakingByTimestamp = new Map<number, number>();
+
+  // Process supply snapshots
+  supplyJson.data.supplySnapshots.forEach((snapshot) => {
+    const timestamp = parseInt(snapshot.timestamp);
+    const supply = parseFloat(snapshot.totalSupply) / Math.pow(10, 18);
+    supplyByTimestamp.set(timestamp, supply);
+  });
+
+  // Process staking snapshots
+  stakingJson.data.yieldSnapshots.forEach((snapshot) => {
+    const timestamp = parseInt(snapshot.timestamp);
+    const staked = parseFloat(snapshot.totalSupply) / Math.pow(10, 18);
+    stakingByTimestamp.set(timestamp, staked);
+  });
+
+  // Combine data points and calculate ratios
+  const combinedData: StakingRatioDataPoint[] = [];
+  const allTimestamps = new Set([
+    ...supplyByTimestamp.keys(),
+    ...stakingByTimestamp.keys(),
+  ]);
+
+  // Sort timestamps
+  const sortedTimestamps = Array.from(allTimestamps).sort((a, b) => a - b);
+
+  let lastKnownSupply = 0;
+  let lastKnownStaked = 0;
+
+  sortedTimestamps.forEach((timestamp) => {
+    // Use latest known values if data point doesn't exist
+    const currentSupply = supplyByTimestamp.get(timestamp) || lastKnownSupply;
+    const currentStaked = stakingByTimestamp.get(timestamp) || lastKnownStaked;
+
+    if (currentSupply > 0) {
+      const stakingRatio = (currentStaked / currentSupply) * 100;
+      const unstakedAmount = currentSupply - currentStaked;
+
+      combinedData.push({
+        timestamp,
+        date: new Date(timestamp * 1000).toISOString(),
+        stakingRatio,
+        totalSupply: currentSupply,
+        stakedAmount: currentStaked,
+        unstakedAmount,
+      });
+
+      lastKnownSupply = currentSupply;
+      lastKnownStaked = currentStaked;
+    }
+  });
+
+  // Sample data if we have too many points (keep every nth point)
+  const maxPoints = 100;
+  if (combinedData.length > maxPoints) {
+    const step = Math.ceil(combinedData.length / maxPoints);
+    return combinedData.filter((_, index) => index % step === 0);
+  }
+
+  return combinedData;
 };

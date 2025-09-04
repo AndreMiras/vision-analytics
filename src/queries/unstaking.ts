@@ -6,6 +6,7 @@ export const unstakingQuery = `
       orderBy: cooldownEnd
       orderDirection: asc
     ) {
+      id
       blockTimestamp
       cooldownEnd
       shares
