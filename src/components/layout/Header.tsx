@@ -1,13 +1,13 @@
 import Link from "next/link";
 import {
   Clock,
-  Github,
   LineChart,
   Lock,
   LucideIcon,
   PieChart,
   TrendingUp,
 } from "lucide-react";
+import { FaGithub } from "react-icons/fa";
 
 interface NavItem {
   href: string;
@@ -74,7 +74,7 @@ export const Header = () => (
             target="_blank"
             className="flex items-center gap-2 text-sm text-muted-foreground hover:text-blue-500 transition-colors"
           >
-            <Github size={16} />
+            <FaGithub size={16} />
             About
           </Link>
         </nav>
