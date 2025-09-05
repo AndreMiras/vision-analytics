@@ -1,4 +1,10 @@
 import { fromWeiToToken } from "@/lib/utils";
+import { stakedVisionTotalSupplyQuery } from "@/queries/svsn/latest";
+import { performanceQuery } from "@/queries/svsn/performance";
+import { tvlQuery } from "@/queries/svsn/tvl";
+import { unstakingQuery } from "@/queries/svsn/unstaking";
+import { latestSupplyQuery } from "@/queries/vsn/latest";
+import { supplyOverTimeQuery } from "@/queries/vsn/supply";
 import {
   BaseSnapshot,
   ConvertedPerformanceSnapshot,
@@ -11,13 +17,6 @@ import {
   TVLSnapshot,
   UnstakingSnapshot,
 } from "@/types/snapshots";
-import {
-  performanceQuery,
-  stakedVisionTotalSupplyQuery,
-  tvlQuery,
-} from "@/queries/snapshots";
-import { unstakingQuery } from "@/queries/unstaking";
-import { latestSupplyQuery, supplyOverTimeQuery } from "@/queries/supply";
 
 // The Graph's maximum page size
 const PAGE_SIZE = 1000;

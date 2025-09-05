@@ -14,5 +14,3 @@ export const unstakingQuery = `
     }
   }
 `;
-
-export default unstakingQuery;
