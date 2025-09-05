@@ -8,8 +8,8 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { ConvertedPerformanceSnapshot } from "@/types/snapshots";
 import { timestampToHumanReadable } from "@/utils/time";
+import { ConvertedPerformanceSnapshot } from "@/types/svsn/converted";
 
 interface PerformanceChartProps {
   data: ConvertedPerformanceSnapshot[];

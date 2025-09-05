@@ -5,48 +5,29 @@ import { tvlQuery } from "@/queries/svsn/tvl";
 import { unstakingQuery } from "@/queries/svsn/unstaking";
 import { latestSupplyQuery } from "@/queries/vsn/latest";
 import { supplyOverTimeQuery } from "@/queries/vsn/supply";
+import { BaseSnapshot, YieldSnapshotsResponse } from "@/types/shared/base";
 import {
-  BaseSnapshot,
+  PerformanceSnapshot,
+  TVLSnapshot,
+  UnstakingSnapshot,
+} from "@/types/svsn/snapshots";
+import {
   ConvertedPerformanceSnapshot,
   ConvertedTVLSnapshot,
   ConvertedUnstakingSnapshot,
-  PerformanceSnapshot,
+} from "@/types/svsn/converted";
+import {
   StakingHistoryResponse,
+  UnstakingResponse,
+} from "@/types/svsn/responses";
+import {
+  LatestSupplyResponse,
   SupplyOverTimeResponse,
-  SupplySnapshot,
-  TVLSnapshot,
-  UnstakingSnapshot,
-} from "@/types/snapshots";
+} from "@/types/vsn/responses";
+import { StakingRatioDataPoint } from "@/types/api/staking";
 
 // The Graph's maximum page size
 const PAGE_SIZE = 1000;
-
-interface YieldSnapshotsResponse<T extends BaseSnapshot> {
-  data: {
-    yieldSnapshots: T[];
-  };
-}
-
-interface UnstakingResponse {
-  data: {
-    cooldownStarteds: UnstakingSnapshot[];
-  };
-}
-
-interface LatestSupplyResponse {
-  data: {
-    supplySnapshots: SupplySnapshot[];
-  };
-}
-
-interface StakingRatioDataPoint {
-  timestamp: number;
-  date: string;
-  stakingRatio: number;
-  totalSupply: number;
-  stakedAmount: number;
-  unstakedAmount: number;
-}
 
 export const getSubgraphUrl = (subgraphId?: string) => {
   const apiKey = process.env.THE_GRAPH_API_KEY;

@@ -1,4 +1,4 @@
-import { ConvertedPerformanceSnapshot } from "@/types/snapshots";
+import { ConvertedPerformanceSnapshot } from "@/types/svsn/converted";
 
 export const calculateAPY = (
   startRate: number,

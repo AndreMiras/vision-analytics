@@ -1,7 +1,7 @@
 import { Clock, ExternalLink } from "lucide-react";
-import { ConvertedUnstakingSnapshot } from "@/types/snapshots";
 import { toLocaleDateStringFormat } from "@/utils/time";
 import { formatUSDValue } from "@/lib/utils";
+import { ConvertedUnstakingSnapshot } from "@/types/svsn/converted";
 
 interface UnstakingListProps {
   data: ConvertedUnstakingSnapshot[];

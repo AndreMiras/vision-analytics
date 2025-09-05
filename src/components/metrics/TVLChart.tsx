@@ -10,9 +10,9 @@ import {
 } from "recharts";
 import { formatUSDValue, toHumanReadable } from "@/lib/utils";
 import { timestampToHumanReadable } from "@/utils/time";
-import { ConvertedTVLSnapshot } from "@/types/snapshots";
 import { ChartEmpty } from "@/components/metrics/ChartEmpty";
 import { useMemo } from "react";
+import { ConvertedTVLSnapshot } from "@/types/svsn/converted";
 
 interface TVLChartProps {
   tvlSnapshots: ConvertedTVLSnapshot[];

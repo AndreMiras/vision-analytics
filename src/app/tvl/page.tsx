@@ -11,8 +11,8 @@ import {
 } from "@/components/ui/select";
 import { TVLChart } from "@/components/metrics/TVLChart";
 import { TVLMetricCards } from "@/components/metrics/TVLMetricCards";
-import { ConvertedTVLSnapshot } from "@/types/snapshots";
 import { defaultTimeframe, timeframes } from "@/lib/utils";
+import { ConvertedTVLSnapshot } from "@/types/svsn/converted";
 
 type TimeframeKey = keyof typeof timeframes;
 

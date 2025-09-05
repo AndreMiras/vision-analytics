@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UnstakingChart } from "@/components/metrics/UnstakingChart";
 import { UnstakingMetricCards } from "@/components/metrics/UnstakingMetricCards";
 import { UnstakingList } from "@/components/metrics/UnstakingList";
-import { ConvertedUnstakingSnapshot } from "@/types/snapshots";
+import { ConvertedUnstakingSnapshot } from "@/types/svsn/converted";
 
 export default function UnstakingPage() {
   const [unstakingSnapshots, setUnstakingSnapshots] = useState<

@@ -11,9 +11,9 @@ import {
 } from "@/components/ui/select";
 import { MetricCards } from "@/components/metrics/MetricCards";
 import { PerformanceChart } from "@/components/metrics/PerformanceChart";
-import { ConvertedPerformanceSnapshot } from "@/types/snapshots";
 import { calculateCurrentAPY } from "@/utils/apy";
 import { defaultTimeframe, timeframes } from "@/lib/utils";
+import { ConvertedPerformanceSnapshot } from "@/types/svsn/converted";
 
 type TimeframeKey = keyof typeof timeframes;
 
