@@ -75,7 +75,7 @@ export const UnstakingChart = ({
           <YAxis
             yAxisId="right"
             orientation="right"
-            tickFormatter={formatUSDValue}
+            tickFormatter={(value) => formatUSDValue(value)}
             label={{ value: "USD", angle: 90, position: "insideRight" }}
             tick={{ fontSize: 12 }}
             tickLine={{ stroke: "#666" }}

@@ -22,10 +22,11 @@ export const fromWeiToToken = (weiAmount: string): number =>
 export const toHumanReadable = (value: number) =>
   new Intl.NumberFormat("en", { notation: "compact" }).format(value);
 
-export const formatUSDValue = (value: number) =>
+export const formatUSDValue = (value: number, compact = false) =>
   new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
+    notation: compact ? "compact" : undefined,
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(value);

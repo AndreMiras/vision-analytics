@@ -78,7 +78,7 @@ export default function UnstakingPage() {
     .sort((a, b) => a.timestamp - b.timestamp);
 
   return (
-    <main className="space-y-6">
+    <main>
       <Card>
         <CardHeader>
           <CardTitle>Pending Unstaking (Cooldown)</CardTitle>

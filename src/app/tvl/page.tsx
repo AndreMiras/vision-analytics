@@ -74,13 +74,13 @@ export default function TVLPage() {
     <main>
       <Card>
         <CardHeader>
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col space-y-4 sm:flex-row sm:justify-between sm:items-center sm:space-y-0">
             <CardTitle>Total Value Locked (TVL)</CardTitle>
             <Select
               value={timeframe}
               onValueChange={(tf: TimeframeKey) => setTimeframe(tf)}
             >
-              <SelectTrigger className="w-32">
+              <SelectTrigger className="w-full sm:w-32">
                 <SelectValue>{timeframes[timeframe]}</SelectValue>
               </SelectTrigger>
               <SelectContent>
@@ -93,7 +93,7 @@ export default function TVLPage() {
             </Select>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-3 sm:px-6 space-y-4">
           <TVLMetricCards
             currentTVL={currentTVL}
             tvlChange={tvlChange}
@@ -102,11 +102,13 @@ export default function TVLPage() {
             timeframeDays={timeframe === "max" ? null : parseInt(timeframe)}
             loading={loading}
           />
-          <TVLChart
-            currentPrice={currentPrice}
-            tvlSnapshots={yieldSnapshots}
-            loading={loading}
-          />
+          <div className="w-full">
+            <TVLChart
+              currentPrice={currentPrice}
+              tvlSnapshots={yieldSnapshots}
+              loading={loading}
+            />
+          </div>
         </CardContent>
       </Card>
     </main>
