@@ -12,7 +12,7 @@ export const MetricCard = ({
   secondaryValue,
 }: MetricCardProps) => (
   <Card>
-    <CardContent className="pt-6">
+    <CardContent className="px-3 sm:px-6 space-y-4">
       <div className="text-2xl font-bold">{value}</div>
       {secondaryValue && (
         <div className="text-lg text-muted-foreground">{secondaryValue}</div>

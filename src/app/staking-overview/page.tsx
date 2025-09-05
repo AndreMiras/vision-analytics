@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { StakingChart } from "@/components/metrics/StakingChart";
 import { StakingMetricCards } from "@/components/metrics/StakingMetricCards";
 import { HistoricalStakingRatioChart } from "@/components/metrics/HistoricalStakingRatioChart";
+import { ResponsiveCardContent } from "@/components/ui/responsive-card";
 
 interface StakingData {
   totalVisionSupply: number;
@@ -117,7 +118,7 @@ export default function StakingOverviewPage() {
         <CardHeader>
           <CardTitle>VISION Staking Overview</CardTitle>
         </CardHeader>
-        <CardContent>
+        <ResponsiveCardContent>
           <StakingMetricCards
             currentPrice={stakingData.currentPrice}
             totalVision={stakingData.totalVisionSupply}
@@ -134,7 +135,7 @@ export default function StakingOverviewPage() {
               </div>
             ))}
           </div>
-        </CardContent>
+        </ResponsiveCardContent>
       </Card>
     </main>
   );

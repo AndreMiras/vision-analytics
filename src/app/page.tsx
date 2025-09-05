@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -14,6 +14,7 @@ import { PerformanceChart } from "@/components/metrics/PerformanceChart";
 import { calculateCurrentAPY } from "@/utils/apy";
 import { defaultTimeframe, timeframes } from "@/lib/utils";
 import { ConvertedPerformanceSnapshot } from "@/types/svsn/converted";
+import { ResponsiveCardContent } from "@/components/ui/responsive-card";
 
 type TimeframeKey = keyof typeof timeframes;
 
@@ -75,10 +76,10 @@ export default function Home() {
             </Select>
           </div>
         </CardHeader>
-        <CardContent>
+        <ResponsiveCardContent>
           <MetricCards exchangeRate={latestExchangeRate} apy={currentAPY} />
           <PerformanceChart data={data} />
-        </CardContent>
+        </ResponsiveCardContent>
       </Card>
     </main>
   );

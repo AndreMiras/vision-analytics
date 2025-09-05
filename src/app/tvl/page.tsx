@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -13,6 +13,7 @@ import { TVLChart } from "@/components/metrics/TVLChart";
 import { TVLMetricCards } from "@/components/metrics/TVLMetricCards";
 import { defaultTimeframe, timeframes } from "@/lib/utils";
 import { ConvertedTVLSnapshot } from "@/types/svsn/converted";
+import { ResponsiveCardContent } from "@/components/ui/responsive-card";
 
 type TimeframeKey = keyof typeof timeframes;
 
@@ -93,7 +94,7 @@ export default function TVLPage() {
             </Select>
           </div>
         </CardHeader>
-        <CardContent className="px-3 sm:px-6 space-y-4">
+        <ResponsiveCardContent>
           <TVLMetricCards
             currentTVL={currentTVL}
             tvlChange={tvlChange}
@@ -109,7 +110,7 @@ export default function TVLPage() {
               loading={loading}
             />
           </div>
-        </CardContent>
+        </ResponsiveCardContent>
       </Card>
     </main>
   );

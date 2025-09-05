@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { UnstakingChart } from "@/components/metrics/UnstakingChart";
 import { UnstakingMetricCards } from "@/components/metrics/UnstakingMetricCards";
 import { UnstakingList } from "@/components/metrics/UnstakingList";
 import { ConvertedUnstakingSnapshot } from "@/types/svsn/converted";
+import { ResponsiveCardContent } from "@/components/ui/responsive-card";
 
 export default function UnstakingPage() {
   const [unstakingSnapshots, setUnstakingSnapshots] = useState<
@@ -83,7 +84,7 @@ export default function UnstakingPage() {
         <CardHeader>
           <CardTitle>Pending Unstaking (Cooldown)</CardTitle>
         </CardHeader>
-        <CardContent>
+        <ResponsiveCardContent>
           <UnstakingMetricCards
             currentPrice={currentPrice}
             totalPending={totalPending}
@@ -96,20 +97,20 @@ export default function UnstakingPage() {
             data={chartData}
             loading={loading}
           />
-        </CardContent>
+        </ResponsiveCardContent>
       </Card>
 
       <Card>
         <CardHeader>
           <CardTitle>Upcoming Unlocks</CardTitle>
         </CardHeader>
-        <CardContent>
+        <ResponsiveCardContent>
           <UnstakingList
             currentPrice={currentPrice}
             data={pendingCooldowns.slice(0, 10)}
             loading={loading}
           />
-        </CardContent>
+        </ResponsiveCardContent>
       </Card>
     </main>
   );
