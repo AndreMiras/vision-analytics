@@ -1,5 +1,5 @@
 import { Clock, ExternalLink } from "lucide-react";
-import { toLocaleDateStringFormat } from "@/utils/time";
+import { formatTimeRemaining, toLocaleDateStringFormat } from "@/utils/time";
 import { formatUSDValue } from "@/lib/utils";
 import { ConvertedUnstakingSnapshot } from "@/types/svsn/converted";
 
@@ -24,28 +24,6 @@ export const UnstakingList = ({
   const formatDate = (timestamp: number) => {
     const date = new Date(timestamp * 1000);
     return date.toLocaleDateString("en-US", toLocaleDateStringFormat);
-  };
-
-  const getTimeRemaining = (timestamp: number) => {
-    const now = Date.now();
-    const unlockTime = timestamp * 1000;
-    const diffMs = unlockTime - now;
-
-    if (diffMs < 0) return "Past due";
-
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    const diffHours = Math.floor(
-      (diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
-    );
-
-    if (diffDays > 0) {
-      return `${diffDays}d ${diffHours}h`;
-    } else if (diffHours > 0) {
-      return `${diffHours}h`;
-    } else {
-      const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-      return `${diffMinutes}m`;
-    }
   };
 
   const formatTxHash = (hash: string) =>
@@ -122,7 +100,7 @@ export const UnstakingList = ({
           <div className="text-right">
             <div className="font-medium">{formatDate(item.cooldownEnd)}</div>
             <div className="text-sm text-gray-600">
-              {getTimeRemaining(item.cooldownEnd)}
+              {formatTimeRemaining(item.cooldownEnd)}
             </div>
           </div>
         </div>

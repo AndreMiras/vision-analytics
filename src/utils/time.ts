@@ -44,3 +44,29 @@ export const formatRelativeTime = (
 
   return toLocaleDateString(date);
 };
+
+export const formatTimeRemaining = (
+  targetTimestamp: number,
+  referenceTime: Date = new Date(),
+): string => {
+  const targetTime = targetTimestamp * 1000;
+  const diffMs = targetTime - referenceTime.getTime();
+
+  if (diffMs < 0) return "Past due";
+
+  const diffDays = Math.floor(diffMs / toMilliseconds.fromDays(1));
+  const diffHours = Math.floor(
+    (diffMs % toMilliseconds.fromDays(1)) / toMilliseconds.fromHours(1),
+  );
+
+  if (diffDays > 0) {
+    return `${diffDays}d ${diffHours}h`;
+  } else if (diffHours > 0) {
+    return `${diffHours}h`;
+  } else {
+    const diffMinutes = Math.floor(
+      (diffMs % toMilliseconds.fromHours(1)) / toMilliseconds.fromMinutes(1),
+    );
+    return `${diffMinutes}m`;
+  }
+};
