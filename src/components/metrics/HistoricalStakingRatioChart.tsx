@@ -1,8 +1,9 @@
 import {
+  Area,
+  ComposedChart,
   CartesianGrid,
   Legend,
   Line,
-  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -71,11 +72,11 @@ export const HistoricalStakingRatioChart = ({
   return (
     <div className="h-[400px] w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart
+        <ComposedChart
           data={data}
           margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
         >
-          <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+          <CartesianGrid strokeDasharray="3 3" />
           <XAxis
             dataKey="timestamp"
             type="number"
@@ -85,18 +86,10 @@ export const HistoricalStakingRatioChart = ({
             tick={{ fontSize: 12 }}
           />
           <YAxis
-            yAxisId="ratio"
-            orientation="left"
-            domain={[0, 100]}
-            tickFormatter={(value) => `${value}%`}
-            tick={{ fontSize: 12 }}
-          />
-          <YAxis
             yAxisId="supply"
-            orientation="right"
+            orientation="left"
             tickFormatter={(value) => toHumanReadable(value)}
             tick={{ fontSize: 12 }}
-            hide
           />
           <Tooltip
             formatter={formatTooltipValue}
@@ -108,28 +101,27 @@ export const HistoricalStakingRatioChart = ({
             }}
           />
           <Legend />
-          <Line
-            yAxisId="ratio"
-            type="monotone"
-            dataKey="stakingRatio"
-            stroke="#10b981"
-            strokeWidth={3}
-            dot={{ fill: "#10b981", strokeWidth: 2, r: 4 }}
-            name="Staking Ratio"
-            connectNulls={false}
-          />
-          <Line
+
+          {/* Stacked Areas for Supply Breakdown */}
+          <Area
             yAxisId="supply"
             type="monotone"
-            dataKey="totalSupply"
-            stroke="#6b7280"
-            strokeWidth={2}
-            strokeDasharray="5 5"
-            dot={false}
-            name="Total Supply"
-            hide
+            dataKey="stakedAmount"
+            stackId="1"
+            stroke="#10b981"
+            fill="#10b981"
+            name="Staked Amount"
           />
-        </LineChart>
+          <Area
+            yAxisId="supply"
+            type="monotone"
+            dataKey="unstakedAmount"
+            stackId="1"
+            stroke="#6b7280"
+            fill="#6b7280"
+            name="Available to Stake"
+          />
+        </ComposedChart>
       </ResponsiveContainer>
     </div>
   );
