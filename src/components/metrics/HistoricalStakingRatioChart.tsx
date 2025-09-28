@@ -3,56 +3,42 @@ import {
   ComposedChart,
   CartesianGrid,
   Legend,
-  Line,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
-import { formatUSDValue, toHumanReadable } from "@/lib/utils";
 import { ChartEmpty } from "@/components/metrics/ChartEmpty";
 import { timestampToHumanReadable, toLocaleDateString } from "@/utils/time";
-
-interface StakingRatioDataPoint {
-  timestamp: number;
-  date: string;
-  stakingRatio: number;
-  totalSupply: number;
-  stakedAmount: number;
-  unstakedAmount: number;
-}
+import { StakingRatioDataPoint } from "@/types/api/staking";
 
 interface HistoricalStakingRatioChartProps {
   data: StakingRatioDataPoint[];
   loading?: boolean;
-  currentPrice: number;
 }
+
+const toPercent = (decimal: number, fixed = 0) =>
+  `${(decimal * 100).toFixed(fixed)}%`;
 
 export const HistoricalStakingRatioChart = ({
   data,
   loading = false,
-  currentPrice,
 }: HistoricalStakingRatioChartProps) => {
   const tooltipFormatters = {
-    stakingRatio: (value: number) => [`${value.toFixed(2)}%`, "Staking Ratio"],
-    totalSupply: (value: number) => [
-      `${toHumanReadable(value)} VSN (${formatUSDValue(value * currentPrice)})`,
-      "Total Supply",
-    ],
-    stakedAmount: (value: number) => [
-      `${toHumanReadable(value)} sVSN (${formatUSDValue(
-        value * currentPrice,
-      )})`,
+    stakedPercent: (value: number) => [
+      `${toPercent(value, 2)}`,
       "Staked Amount",
     ],
-    unstakedAmount: (value: number) => [
-      `${toHumanReadable(value)} VSN (${formatUSDValue(value * currentPrice)})`,
+    unstakedPercent: (value: number) => [
+      `${toPercent(value, 2)}`,
       "Available to Stake",
     ],
   } as const;
 
-  const formatTooltipValue = (value: number, name: string) => {
-    const formatter = tooltipFormatters[name as keyof typeof tooltipFormatters];
+  const formatTooltipValue = (value: number, name: string, props: unknown) => {
+    const dataKey = (props as { dataKey: keyof typeof tooltipFormatters })
+      .dataKey;
+    const formatter = tooltipFormatters[dataKey];
     return formatter ? formatter(value) : [value.toString(), name];
   };
 
@@ -88,7 +74,7 @@ export const HistoricalStakingRatioChart = ({
           <YAxis
             yAxisId="supply"
             orientation="left"
-            tickFormatter={(value) => toHumanReadable(value)}
+            tickFormatter={(value) => toPercent(value)}
             tick={{ fontSize: 12 }}
           />
           <Tooltip
@@ -106,7 +92,7 @@ export const HistoricalStakingRatioChart = ({
           <Area
             yAxisId="supply"
             type="monotone"
-            dataKey="stakedAmount"
+            dataKey="stakedPercent"
             stackId="1"
             stroke="#10b981"
             fill="#10b981"
@@ -115,7 +101,7 @@ export const HistoricalStakingRatioChart = ({
           <Area
             yAxisId="supply"
             type="monotone"
-            dataKey="unstakedAmount"
+            dataKey="unstakedPercent"
             stackId="1"
             stroke="#6b7280"
             fill="#6b7280"

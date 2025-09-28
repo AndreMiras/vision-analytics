@@ -6,20 +6,12 @@ import { StakingChart } from "@/components/metrics/StakingChart";
 import { StakingMetricCards } from "@/components/metrics/StakingMetricCards";
 import { HistoricalStakingRatioChart } from "@/components/metrics/HistoricalStakingRatioChart";
 import { ResponsiveCardContent } from "@/components/ui/responsive-card";
+import { StakingRatioDataPoint } from "@/types/api/staking";
 
 interface StakingData {
   totalVisionSupply: number;
   stakedVision: number;
   currentPrice: number;
-}
-
-interface StakingRatioDataPoint {
-  timestamp: number;
-  date: string;
-  stakingRatio: number;
-  totalSupply: number;
-  stakedAmount: number;
-  unstakedAmount: number;
 }
 
 export default function StakingOverviewPage() {
@@ -106,7 +98,6 @@ export default function StakingOverviewPage() {
         <HistoricalStakingRatioChart
           data={historyData}
           loading={historyLoading}
-          currentPrice={stakingData.currentPrice}
         />
       ),
     },

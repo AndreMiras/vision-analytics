@@ -1,10 +1,11 @@
 export interface StakingRatioDataPoint {
   timestamp: number;
   date: string;
-  stakingRatio: number;
   totalSupply: number;
   stakedAmount: number;
+  stakedPercent: number;
   unstakedAmount: number;
+  unstakedPercent: number;
 }
 
 export interface StakingOverview {

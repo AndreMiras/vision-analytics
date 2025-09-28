@@ -301,16 +301,18 @@ export const fetchStakingRatioHistory = async (
     const currentStaked = stakingByTimestamp.get(timestamp) || lastKnownStaked;
 
     if (currentSupply > 0) {
-      const stakingRatio = (currentStaked / currentSupply) * 100;
+      const stakedPercent = currentStaked / currentSupply;
       const unstakedAmount = currentSupply - currentStaked;
+      const unstakedPercent = unstakedAmount / currentSupply;
 
       combinedData.push({
         timestamp,
         date: new Date(timestamp * 1000).toISOString(),
-        stakingRatio,
         totalSupply: currentSupply,
         stakedAmount: currentStaked,
+        stakedPercent,
         unstakedAmount,
+        unstakedPercent,
       });
 
       lastKnownSupply = currentSupply;
