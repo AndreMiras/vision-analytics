@@ -3,6 +3,10 @@ import { stakedVisionTotalSupplyQuery } from "@/queries/svsn/latest";
 import { performanceQuery } from "@/queries/svsn/performance";
 import { tvlQuery } from "@/queries/svsn/tvl";
 import { unstakingQuery } from "@/queries/svsn/unstaking";
+import {
+  rewardsCyclesQuery,
+  distributeRewardsQuery,
+} from "@/queries/svsn/rewards-cycles";
 import { latestSupplyQuery } from "@/queries/vsn/latest";
 import { supplyOverTimeQuery } from "@/queries/vsn/supply";
 import { BaseSnapshot, YieldSnapshotsResponse } from "@/types/shared/base";
@@ -16,6 +20,12 @@ import {
   ConvertedTVLSnapshot,
   ConvertedUnstakingSnapshot,
 } from "@/types/svsn/converted";
+import {
+  RewardsCycleCreated,
+  DistributeRewardsEvent,
+  ConvertedRewardsCycle,
+  ConvertedDistributeRewardsEvent,
+} from "@/types/svsn/cycle-events";
 import {
   StakingHistoryResponse,
   UnstakingResponse,
@@ -65,6 +75,70 @@ const convertUnstakingSnapshot = (
   shares: fromWeiToToken(snapshot.shares),
   cooldownEnd: parseInt(snapshot.cooldownEnd),
 });
+
+interface RewardsCyclesResponse {
+  data: {
+    rewardsCycleCreateds: RewardsCycleCreated[];
+  };
+}
+
+interface DistributeRewardsResponse {
+  data: {
+    distributeRewards_collection: DistributeRewardsEvent[];
+  };
+}
+
+const convertRewardsCycle = (
+  cycle: RewardsCycleCreated,
+  now: number,
+): ConvertedRewardsCycle => {
+  const blockTimestamp = parseInt(cycle.blockTimestamp);
+  const endTimestamp = parseInt(cycle.rewardsCycleEndTimestamp);
+  const duration = endTimestamp - blockTimestamp;
+
+  let status: "ongoing" | "completed" | "upcoming";
+  let progressPercent: number;
+  let timeRemaining: number;
+
+  if (now < blockTimestamp) {
+    status = "upcoming";
+    progressPercent = 0;
+    timeRemaining = blockTimestamp - now;
+  } else if (now > endTimestamp) {
+    status = "completed";
+    progressPercent = 100;
+    timeRemaining = 0;
+  } else {
+    status = "ongoing";
+    const elapsed = now - blockTimestamp;
+    progressPercent = (elapsed / duration) * 100;
+    timeRemaining = endTimestamp - now;
+  }
+
+  return {
+    id: cycle.id,
+    rewardsCycleAmount: fromWeiToToken(cycle.rewardsCycleAmount),
+    rewardsCycleEndTimestamp: endTimestamp,
+    newBpsYieldCapPerSecond: parseFloat(cycle.newBpsYieldCapPerSecond),
+    blockTimestamp,
+    transactionHash: cycle.transactionHash,
+    duration,
+    status,
+    progressPercent,
+    timeRemaining,
+  };
+};
+
+const convertDistributeRewardsEvent = (
+  event: DistributeRewardsEvent,
+): ConvertedDistributeRewardsEvent => {
+  return {
+    id: event.id,
+    timestamp: parseInt(event.blockTimestamp),
+    txHash: event.transactionHash,
+    rewards: fromWeiToToken(event.rewards),
+  };
+};
 
 export const fetchYieldSnapshotsPage = async <T extends BaseSnapshot>(
   queryUrl: string,
@@ -328,4 +402,85 @@ export const fetchStakingRatioHistory = async (
   }
 
   return combinedData;
+};
+
+export const fetchRewardsCycles = async (
+  queryUrl: string,
+  limit: number = 10,
+): Promise<ConvertedRewardsCycle[]> => {
+  const cycles: RewardsCycleCreated[] = [];
+  let skip = 0;
+  const now = Math.floor(Date.now() / 1000);
+
+  // Fetch until we have enough cycles or no more data
+  while (cycles.length < limit) {
+    const body = JSON.stringify({
+      query: rewardsCyclesQuery,
+      variables: { skip },
+    });
+
+    const response = await fetch(queryUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body,
+    });
+
+    const json = (await response.json()) as RewardsCyclesResponse;
+
+    // Handle GraphQL errors or missing data
+    if (!json.data || !json.data.rewardsCycleCreateds) {
+      console.error("GraphQL error or missing data:", json);
+      break;
+    }
+
+    const page = json.data.rewardsCycleCreateds;
+
+    if (page.length === 0) break;
+
+    cycles.push(...page);
+    skip += page.length;
+
+    if (page.length < PAGE_SIZE) break;
+  }
+
+  return cycles.slice(0, limit).map((cycle) => convertRewardsCycle(cycle, now));
+};
+
+export const fetchDistributeRewards = async (
+  queryUrl: string,
+  startTime?: number,
+): Promise<ConvertedDistributeRewardsEvent[]> => {
+  const events: DistributeRewardsEvent[] = [];
+  let skip = 0;
+  let hasMorePages = true;
+
+  while (hasMorePages) {
+    const body = JSON.stringify({
+      query: distributeRewardsQuery,
+      variables: { skip, startTime },
+    });
+
+    const response = await fetch(queryUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body,
+    });
+
+    const json = (await response.json()) as DistributeRewardsResponse;
+
+    // Handle GraphQL errors or missing data
+    if (!json.data || !json.data.distributeRewards_collection) {
+      console.error("GraphQL error or missing data:", json);
+      hasMorePages = false;
+      continue;
+    }
+
+    const page = json.data.distributeRewards_collection;
+
+    events.push(...page);
+    skip += page.length;
+    hasMorePages = page.length === PAGE_SIZE;
+  }
+
+  return events.map(convertDistributeRewardsEvent);
 };

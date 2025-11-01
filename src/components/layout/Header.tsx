@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import {
+  Award,
   Clock,
   LineChart,
   Lock,
@@ -35,6 +36,11 @@ const navigationItems: NavItem[] = [
     href: "/staking-overview",
     label: "Staking Overview",
     icon: PieChart,
+  },
+  {
+    href: "/rewards-cycles",
+    label: "Rewards Cycles",
+    icon: Award,
   },
   {
     href: "/unstaking",
