@@ -7,6 +7,7 @@ import { UnstakingMetricCards } from "@/components/metrics/UnstakingMetricCards"
 import { UnstakingList } from "@/components/metrics/UnstakingList";
 import { ConvertedUnstakingSnapshot } from "@/types/svsn/converted";
 import { ResponsiveCardContent } from "@/components/ui/responsive-card";
+import { getUnstakingOverview } from "@/utils/unstaking";
 
 export default function UnstakingPage() {
   const [unstakingSnapshots, setUnstakingSnapshots] = useState<
@@ -39,44 +40,8 @@ export default function UnstakingPage() {
     fetchData();
   }, []);
 
-  // Filter for pending cooldowns (not yet unlocked)
-  const now = Math.floor(Date.now() / 1000);
-  const pendingCooldowns = unstakingSnapshots.filter(
-    (item) => item.cooldownEnd > now,
-  );
-
-  // Calculate metrics
-  const totalPending = pendingCooldowns.reduce(
-    (sum, item) => sum + item.shares,
-    0,
-  );
-  const nextUnlock =
-    pendingCooldowns.length > 0
-      ? Math.min(...pendingCooldowns.map((item) => item.cooldownEnd))
-      : null;
-
-  // Group by unlock date for chart
-  const groupedByDate = pendingCooldowns.reduce(
-    (acc, item) => {
-      const date = new Date(item.cooldownEnd * 1000)
-        .toISOString()
-        .split("T")[0];
-      if (!acc[date]) {
-        acc[date] = 0;
-      }
-      acc[date] += item.shares;
-      return acc;
-    },
-    {} as Record<string, number>,
-  );
-
-  const chartData = Object.entries(groupedByDate)
-    .map(([date, amount]) => ({
-      date,
-      amount,
-      timestamp: new Date(date).getTime() / 1000,
-    }))
-    .sort((a, b) => a.timestamp - b.timestamp);
+  const { pendingCooldowns, totalPending, nextUnlock, chartData } =
+    getUnstakingOverview(unstakingSnapshots, Math.floor(Date.now() / 1000));
 
   return (
     <main className="flex flex-col gap-2">
