@@ -1,0 +1,172 @@
+import { afterEach, describe, expect, it, vi } from "vitest";
+import {
+  fetchDistributeRewards,
+  fetchRewardsCycles,
+  getSvsnSubgraphUrl,
+} from "@/services/graph";
+import { fetchVSNPrice } from "@/services/price";
+import {
+  ConvertedDistributeRewardsEvent,
+  ConvertedRewardsCycle,
+} from "@/types/svsn/cycle-events";
+import { POST } from "./route";
+
+vi.mock("@/services/graph", () => ({
+  fetchDistributeRewards: vi.fn(),
+  fetchRewardsCycles: vi.fn(),
+  getSvsnSubgraphUrl: vi.fn(),
+}));
+
+vi.mock("@/services/price", () => ({
+  fetchVSNPrice: vi.fn(),
+}));
+
+const mockGetSvsnSubgraphUrl = vi.mocked(getSvsnSubgraphUrl);
+const mockFetchRewardsCycles = vi.mocked(fetchRewardsCycles);
+const mockFetchDistributeRewards = vi.mocked(fetchDistributeRewards);
+const mockFetchVSNPrice = vi.mocked(fetchVSNPrice);
+
+const createCycle = (
+  id: string,
+  overrides: Partial<ConvertedRewardsCycle> = {},
+): ConvertedRewardsCycle => ({
+  id,
+  rewardsCycleAmount: 100,
+  rewardsCycleEndTimestamp: 2_000,
+  newBpsYieldCapPerSecond: 0.000001,
+  blockTimestamp: 1_000,
+  transactionHash: `0x${id}`,
+  duration: 1_000,
+  status: "ongoing",
+  progressPercent: 25,
+  timeRemaining: 750,
+  ...overrides,
+});
+
+const createDistribution = (
+  id: string,
+  timestamp: number,
+  rewards: number,
+): ConvertedDistributeRewardsEvent => ({
+  id,
+  timestamp,
+  txHash: `0x${id}`,
+  rewards,
+});
+
+describe("/api/rewards-cycles route", () => {
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("returns current-cycle analytics and completed-cycle historical averages", async () => {
+    const queryUrl = "https://example.test/svsn";
+    const ongoingCycle = createCycle("ongoing", {
+      blockTimestamp: 1_000,
+      rewardsCycleEndTimestamp: 2_000,
+      rewardsCycleAmount: 100,
+      status: "ongoing",
+    });
+    const firstCompletedCycle = createCycle("completed-1", {
+      blockTimestamp: 300,
+      rewardsCycleEndTimestamp: 500,
+      rewardsCycleAmount: 50,
+      duration: 200,
+      status: "completed",
+      progressPercent: 100,
+      timeRemaining: 0,
+    });
+    const secondCompletedCycle = createCycle("completed-2", {
+      blockTimestamp: 600,
+      rewardsCycleEndTimestamp: 900,
+      rewardsCycleAmount: 75,
+      duration: 300,
+      status: "completed",
+      progressPercent: 100,
+      timeRemaining: 0,
+    });
+    const currentDistributions = [
+      createDistribution("before-current", 999, 5),
+      createDistribution("current-1", 1_100, 10),
+      createDistribution("current-2", 1_200, 15),
+      createDistribution("after-current", 2_001, 20),
+    ];
+    const historicalDistributions = [
+      createDistribution("completed-1-a", 300, 10),
+      createDistribution("completed-1-b", 400, 20),
+      createDistribution("between-cycles", 550, 30),
+      createDistribution("completed-2-a", 700, 40),
+      createDistribution("after-completed", 950, 50),
+    ];
+
+    mockGetSvsnSubgraphUrl.mockReturnValue(queryUrl);
+    mockFetchRewardsCycles.mockResolvedValue([
+      firstCompletedCycle,
+      ongoingCycle,
+      secondCompletedCycle,
+    ]);
+    mockFetchDistributeRewards
+      .mockResolvedValueOnce(currentDistributions)
+      .mockResolvedValueOnce(historicalDistributions);
+    mockFetchVSNPrice.mockResolvedValue(0.42);
+
+    const response = await POST();
+
+    expect(response.status).toBe(200);
+    expect(mockFetchRewardsCycles).toHaveBeenCalledWith(queryUrl, 10);
+    expect(mockFetchDistributeRewards).toHaveBeenNthCalledWith(
+      1,
+      queryUrl,
+      ongoingCycle.blockTimestamp,
+    );
+    expect(mockFetchDistributeRewards).toHaveBeenNthCalledWith(
+      2,
+      queryUrl,
+      firstCompletedCycle.blockTimestamp,
+    );
+    await expect(response.json()).resolves.toEqual({
+      data: {
+        currentCycle: {
+          cycle: ongoingCycle,
+          distributions: [
+            createDistribution("current-1", 1_100, 10),
+            createDistribution("current-2", 1_200, 15),
+          ],
+          totalDistributed: 25,
+          remainingBudget: 75,
+          distributionCount: 2,
+          averageDistribution: 12.5,
+          utilizationPercent: 25,
+        },
+        historicalAverage: {
+          cycleDuration: 250,
+          totalDistributed: 35,
+          distributionCount: 1.5,
+          averageDistribution: 70 / 3,
+        },
+        currentPrice: 0.42,
+      },
+    });
+  });
+
+  it("returns empty analytics when no cycles are available", async () => {
+    const queryUrl = "https://example.test/svsn";
+
+    mockGetSvsnSubgraphUrl.mockReturnValue(queryUrl);
+    mockFetchRewardsCycles.mockResolvedValue([]);
+    mockFetchVSNPrice.mockResolvedValue(0.51);
+
+    const response = await POST();
+
+    expect(response.status).toBe(200);
+    expect(mockFetchRewardsCycles).toHaveBeenCalledWith(queryUrl, 10);
+    expect(mockFetchDistributeRewards).not.toHaveBeenCalled();
+    await expect(response.json()).resolves.toEqual({
+      data: {
+        currentCycle: null,
+        historicalAverage: null,
+        currentPrice: 0.51,
+      },
+    });
+  });
+});

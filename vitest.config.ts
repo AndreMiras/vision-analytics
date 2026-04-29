@@ -19,6 +19,7 @@ export default defineConfig({
         "next.config.ts",
         "postcss.config.mjs",
         "eslint.config.mjs",
+        "src/types/**",
         "vitest.config.ts",
         "**/*.test.{ts,tsx}",
         "**/*.spec.{ts,tsx}",
