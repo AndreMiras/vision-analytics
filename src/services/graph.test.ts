@@ -2,6 +2,7 @@ import {
   fetchAllYieldSnapshots,
   fetchDistributeRewards,
   fetchRewardsCycles,
+  fetchStakingRatioHistory,
   fetchYieldSnapshotsPage,
 } from "@/services/graph";
 import { BaseSnapshot } from "@/types/shared/base";
@@ -9,6 +10,8 @@ import {
   DistributeRewardsEvent,
   RewardsCycleCreated,
 } from "@/types/svsn/cycle-events";
+import { YieldSnapshot } from "@/types/svsn/snapshots";
+import { SupplySnapshot } from "@/types/vsn/snapshots";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const PAGE_SIZE = 1000;
@@ -65,6 +68,28 @@ const getRequestBody = (
 };
 
 const wei = (tokens: number): string => `${tokens}000000000000000000`;
+
+const createSupplySnapshot = (
+  timestamp: number,
+  totalSupply: number,
+): SupplySnapshot => ({
+  id: `supply-${timestamp}`,
+  timestamp: timestamp.toString(),
+  blockNumber: (20_000_000 + timestamp).toString(),
+  totalSupply: wei(totalSupply),
+});
+
+const createStakingSnapshot = (
+  timestamp: number,
+  totalSupply: number,
+): YieldSnapshot => ({
+  id: `staking-${timestamp}`,
+  timestamp: timestamp.toString(),
+  blockNumber: (30_000_000 + timestamp).toString(),
+  totalSupply: wei(totalSupply),
+  totalAssets: wei(totalSupply),
+  exchangeRate: "1",
+});
 
 const createRewardsCycle = (
   id: number,
@@ -346,6 +371,149 @@ describe("graph services", () => {
         timestamp: 1_700_001_001,
         txHash: "0xreward1001",
         rewards: 1002,
+      });
+    });
+  });
+
+  describe("fetchStakingRatioHistory", () => {
+    it("requests supply and staking history with a frozen time window", async () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date(1_700_000_000 * 1000));
+
+      const visionUrl = "https://example.test/vision";
+      const stakingUrl = "https://example.test/staking";
+
+      mockFetchResponses(
+        { data: { supplySnapshots: [] } },
+        { data: { yieldSnapshots: [] } },
+      );
+
+      const result = await fetchStakingRatioHistory(visionUrl, stakingUrl, 7);
+
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+      expect(fetchMock).toHaveBeenNthCalledWith(
+        1,
+        visionUrl,
+        expect.objectContaining({
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
+      expect(fetchMock).toHaveBeenNthCalledWith(
+        2,
+        stakingUrl,
+        expect.objectContaining({
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
+      expect(getRequestBody(0).variables).toEqual({
+        startTime: "1699395200",
+        endTime: "1700000000",
+      });
+      expect(getRequestBody(1).variables).toEqual({
+        startTime: "1699395200",
+        endTime: "1700000000",
+      });
+      expect(result).toEqual([]);
+    });
+
+    it("joins timestamps and carries forward the last known supply and staking values", async () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date(1_700_000_500 * 1000));
+
+      const visionUrl = "https://example.test/vision";
+      const stakingUrl = "https://example.test/staking";
+      const supplySnapshots = [
+        createSupplySnapshot(100, 1_000),
+        createSupplySnapshot(300, 1_200),
+        createSupplySnapshot(400, 1_600),
+      ];
+      const stakingSnapshots = [
+        createStakingSnapshot(200, 250),
+        createStakingSnapshot(300, 300),
+      ];
+
+      mockFetchResponses(
+        { data: { supplySnapshots } },
+        { data: { yieldSnapshots: stakingSnapshots } },
+      );
+
+      const result = await fetchStakingRatioHistory(visionUrl, stakingUrl, 30);
+
+      expect(result).toEqual([
+        {
+          timestamp: 100,
+          date: "1970-01-01T00:01:40.000Z",
+          totalSupply: 1_000,
+          stakedAmount: 0,
+          stakedPercent: 0,
+          unstakedAmount: 1_000,
+          unstakedPercent: 1,
+        },
+        {
+          timestamp: 200,
+          date: "1970-01-01T00:03:20.000Z",
+          totalSupply: 1_000,
+          stakedAmount: 250,
+          stakedPercent: 0.25,
+          unstakedAmount: 750,
+          unstakedPercent: 0.75,
+        },
+        {
+          timestamp: 300,
+          date: "1970-01-01T00:05:00.000Z",
+          totalSupply: 1_200,
+          stakedAmount: 300,
+          stakedPercent: 0.25,
+          unstakedAmount: 900,
+          unstakedPercent: 0.75,
+        },
+        {
+          timestamp: 400,
+          date: "1970-01-01T00:06:40.000Z",
+          totalSupply: 1_600,
+          stakedAmount: 300,
+          stakedPercent: 0.1875,
+          unstakedAmount: 1_300,
+          unstakedPercent: 0.8125,
+        },
+      ]);
+    });
+
+    it("samples combined data down with the current ceil step behavior", async () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date(1_700_000_000 * 1000));
+
+      const visionUrl = "https://example.test/vision";
+      const stakingUrl = "https://example.test/staking";
+      const timestamps = Array.from({ length: 101 }, (_, index) => index + 1);
+      const supplySnapshots = timestamps.map((timestamp) =>
+        createSupplySnapshot(timestamp, 1_000 + timestamp),
+      );
+      const stakingSnapshots = timestamps.map((timestamp) =>
+        createStakingSnapshot(timestamp, 100 + timestamp),
+      );
+
+      mockFetchResponses(
+        { data: { supplySnapshots } },
+        { data: { yieldSnapshots: stakingSnapshots } },
+      );
+
+      const result = await fetchStakingRatioHistory(visionUrl, stakingUrl, 30);
+
+      expect(result).toHaveLength(51);
+      expect(result.map((point) => point.timestamp)).toEqual(
+        timestamps.filter((_, index) => index % 2 === 0),
+      );
+      expect(result.at(-1)).toEqual({
+        timestamp: 101,
+        date: "1970-01-01T00:01:41.000Z",
+        totalSupply: 1_101,
+        stakedAmount: 201,
+        stakedPercent: 201 / 1_101,
+        unstakedAmount: 900,
+        unstakedPercent: 900 / 1_101,
       });
     });
   });
