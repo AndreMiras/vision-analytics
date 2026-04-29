@@ -1,50 +1,50 @@
-import assert from "node:assert";
 import {
   formatRelativeTime,
   formatTimeRemaining,
   toMilliseconds,
   toSeconds,
 } from "@/utils/time";
+import { describe, expect, it } from "vitest";
 
 describe("time", () => {
   describe("toSeconds", () => {
     it("should convert minutes to seconds", () => {
-      assert.strictEqual(toSeconds.fromMinutes(1), 60);
-      assert.strictEqual(toSeconds.fromMinutes(2), 120);
-      assert.strictEqual(toSeconds.fromMinutes(0.5), 30);
+      expect(toSeconds.fromMinutes(1)).toBe(60);
+      expect(toSeconds.fromMinutes(2)).toBe(120);
+      expect(toSeconds.fromMinutes(0.5)).toBe(30);
     });
 
     it("should convert hours to seconds", () => {
-      assert.strictEqual(toSeconds.fromHours(1), 3600);
-      assert.strictEqual(toSeconds.fromHours(2), 7200);
-      assert.strictEqual(toSeconds.fromHours(0.5), 1800);
+      expect(toSeconds.fromHours(1)).toBe(3600);
+      expect(toSeconds.fromHours(2)).toBe(7200);
+      expect(toSeconds.fromHours(0.5)).toBe(1800);
     });
 
     it("should convert days to seconds", () => {
-      assert.strictEqual(toSeconds.fromDays(1), 86400);
-      assert.strictEqual(toSeconds.fromDays(2), 172800);
+      expect(toSeconds.fromDays(1)).toBe(86400);
+      expect(toSeconds.fromDays(2)).toBe(172800);
     });
   });
 
   describe("toMilliseconds", () => {
     it("should convert seconds to milliseconds", () => {
-      assert.strictEqual(toMilliseconds.fromSeconds(1), 1000);
-      assert.strictEqual(toMilliseconds.fromSeconds(5), 5000);
-      assert.strictEqual(toMilliseconds.fromSeconds(0.1), 100);
+      expect(toMilliseconds.fromSeconds(1)).toBe(1000);
+      expect(toMilliseconds.fromSeconds(5)).toBe(5000);
+      expect(toMilliseconds.fromSeconds(0.1)).toBe(100);
     });
 
     it("should convert minutes to milliseconds", () => {
-      assert.strictEqual(toMilliseconds.fromMinutes(1), 60000);
-      assert.strictEqual(toMilliseconds.fromMinutes(2), 120000);
+      expect(toMilliseconds.fromMinutes(1)).toBe(60000);
+      expect(toMilliseconds.fromMinutes(2)).toBe(120000);
     });
 
     it("should convert hours to milliseconds", () => {
-      assert.strictEqual(toMilliseconds.fromHours(1), 3600000);
-      assert.strictEqual(toMilliseconds.fromHours(2), 7200000);
+      expect(toMilliseconds.fromHours(1)).toBe(3600000);
+      expect(toMilliseconds.fromHours(2)).toBe(7200000);
     });
 
     it("should convert days to milliseconds", () => {
-      assert.strictEqual(toMilliseconds.fromDays(1), 86400000);
+      expect(toMilliseconds.fromDays(1)).toBe(86400000);
     });
   });
 
@@ -53,35 +53,35 @@ describe("time", () => {
     const dayMs = 1000 * 60 * 60 * 24;
 
     it("Today: same moment", () => {
-      assert.equal(formatRelativeTime(new Date(ref), ref), "Today");
+      expect(formatRelativeTime(new Date(ref), ref)).toBe("Today");
     });
 
     it("Today: earlier on same day (small negative -> ceil to 0)", () => {
       const ts = new Date("2025-08-18T11:00:00Z");
-      assert.equal(formatRelativeTime(ts, ref), "Today");
+      expect(formatRelativeTime(ts, ref)).toBe("Today");
     });
 
     it("Tomorrow: +1 second", () => {
       const ts = new Date("2025-08-18T12:00:01Z");
-      assert.equal(formatRelativeTime(ts, ref), "Tomorrow");
+      expect(formatRelativeTime(ts, ref)).toBe("Tomorrow");
     });
 
     it("Past due: at least one full day behind", () => {
       const ts = new Date("2025-08-17T11:59:00Z"); // < -1 day
-      assert.equal(formatRelativeTime(ts, ref), "Past due");
+      expect(formatRelativeTime(ts, ref)).toBe("Past due");
     });
 
     for (let d = 2; d <= 6; d++) {
       it(`${d} days: exactly +${d} days`, () => {
         const later = new Date(ref.getTime() + d * dayMs);
-        assert.equal(formatRelativeTime(later, ref), `${d} days`);
+        expect(formatRelativeTime(later, ref)).toBe(`${d} days`);
       });
     }
 
     it("7+ days: returns localized date string (exactly +7 days)", () => {
       const later = new Date(ref.getTime() + 7 * dayMs);
       const expected = "Aug 25, 2025";
-      assert.equal(formatRelativeTime(later, ref), expected);
+      expect(formatRelativeTime(later, ref)).toBe(expected);
     });
   });
 
@@ -91,51 +91,51 @@ describe("time", () => {
 
     it("should return 'Past due' for timestamps in the past", () => {
       const pastTimestamp = refTimestamp - 3600; // 1 hour ago
-      assert.strictEqual(formatTimeRemaining(pastTimestamp, ref), "Past due");
+      expect(formatTimeRemaining(pastTimestamp, ref)).toBe("Past due");
     });
 
     it("should format days and hours when difference is >= 1 day", () => {
       // Exactly 1 day and 2 hours from reference
       const futureTimestamp =
         refTimestamp + toSeconds.fromDays(1) + toSeconds.fromHours(2);
-      assert.strictEqual(formatTimeRemaining(futureTimestamp, ref), "1d 2h");
+      expect(formatTimeRemaining(futureTimestamp, ref)).toBe("1d 2h");
 
       // 3 days and 5 hours
       const futureTimestamp2 =
         refTimestamp + toSeconds.fromDays(3) + toSeconds.fromHours(5);
-      assert.strictEqual(formatTimeRemaining(futureTimestamp2, ref), "3d 5h");
+      expect(formatTimeRemaining(futureTimestamp2, ref)).toBe("3d 5h");
 
       // Exactly 2 days (0 hours)
       const exactDaysTimestamp = refTimestamp + toSeconds.fromDays(2);
-      assert.strictEqual(formatTimeRemaining(exactDaysTimestamp, ref), "2d 0h");
+      expect(formatTimeRemaining(exactDaysTimestamp, ref)).toBe("2d 0h");
     });
 
     it("should format only hours when difference is < 1 day and >= 1 hour", () => {
       // 5 hours from reference
       const futureTimestamp = refTimestamp + toSeconds.fromHours(5);
-      assert.strictEqual(formatTimeRemaining(futureTimestamp, ref), "5h");
+      expect(formatTimeRemaining(futureTimestamp, ref)).toBe("5h");
 
       // 23 hours (less than a day)
       const almostDayTimestamp = refTimestamp + toSeconds.fromHours(23);
-      assert.strictEqual(formatTimeRemaining(almostDayTimestamp, ref), "23h");
+      expect(formatTimeRemaining(almostDayTimestamp, ref)).toBe("23h");
 
       // Exactly 1 hour
       const oneHourTimestamp = refTimestamp + toSeconds.fromHours(1);
-      assert.strictEqual(formatTimeRemaining(oneHourTimestamp, ref), "1h");
+      expect(formatTimeRemaining(oneHourTimestamp, ref)).toBe("1h");
     });
 
     it("should format only minutes when difference is < 1 hour", () => {
       // 30 minutes from reference
       const futureTimestamp = refTimestamp + toSeconds.fromMinutes(30);
-      assert.strictEqual(formatTimeRemaining(futureTimestamp, ref), "30m");
+      expect(formatTimeRemaining(futureTimestamp, ref)).toBe("30m");
 
       // 5 minutes
       const fiveMinutesTimestamp = refTimestamp + toSeconds.fromMinutes(5);
-      assert.strictEqual(formatTimeRemaining(fiveMinutesTimestamp, ref), "5m");
+      expect(formatTimeRemaining(fiveMinutesTimestamp, ref)).toBe("5m");
 
       // 0 minutes (same time, rounded down)
       const sameTimeTimestamp = refTimestamp + 30; // 30 seconds
-      assert.strictEqual(formatTimeRemaining(sameTimeTimestamp, ref), "0m");
+      expect(formatTimeRemaining(sameTimeTimestamp, ref)).toBe("0m");
     });
 
     it("should use current time as default reference", () => {
@@ -143,24 +143,21 @@ describe("time", () => {
       // We can't test exact values since it uses current time, but we can test it doesn't throw
       const futureTimestamp = Math.floor(Date.now() / 1000) + 3600; // 1 hour from now
       const result = formatTimeRemaining(futureTimestamp);
-      assert.strictEqual(typeof result, "string");
-      assert.notStrictEqual(result, "Past due");
+      expect(typeof result).toBe("string");
+      expect(result).not.toBe("Past due");
     });
 
     it("should handle edge cases correctly", () => {
       // Exactly at the target time
-      assert.strictEqual(formatTimeRemaining(refTimestamp, ref), "0m");
+      expect(formatTimeRemaining(refTimestamp, ref)).toBe("0m");
 
       // Very small positive difference (< 1 minute)
       const almostSameTimestamp = refTimestamp + 30; // 30 seconds later
-      assert.strictEqual(formatTimeRemaining(almostSameTimestamp, ref), "0m");
+      expect(formatTimeRemaining(almostSameTimestamp, ref)).toBe("0m");
 
       // Very small negative difference
       const slightlyPastTimestamp = refTimestamp - 1; // 1 second ago
-      assert.strictEqual(
-        formatTimeRemaining(slightlyPastTimestamp, ref),
-        "Past due",
-      );
+      expect(formatTimeRemaining(slightlyPastTimestamp, ref)).toBe("Past due");
     });
   });
 });
