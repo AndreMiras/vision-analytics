@@ -1,6 +1,7 @@
 # Bitpanda Vision Analytics
 
 [![Tests](https://github.com/AndreMiras/vision-analytics/actions/workflows/tests.yml/badge.svg)](https://github.com/AndreMiras/vision-analytics/actions/workflows/tests.yml)
+[![codecov](https://codecov.io/gh/AndreMiras/vision-analytics/branch/main/graph/badge.svg)](https://codecov.io/gh/AndreMiras/vision-analytics)
 
 Extract & chart [Bitpanda Vision](http://vision.now) token yield analytics using
 The Graph Protocol.
