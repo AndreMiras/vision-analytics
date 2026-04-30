@@ -15,6 +15,7 @@ export default function UnstakingPage() {
   >([]);
   const [currentPrice, setCurrentPrice] = useState<number>(0);
   const [loading, setLoading] = useState(true);
+  const [currentTimestamp] = useState(() => Math.floor(Date.now() / 1000));
 
   useEffect(() => {
     const fetchData = async () => {
@@ -41,7 +42,7 @@ export default function UnstakingPage() {
   }, []);
 
   const { pendingCooldowns, totalPending, nextUnlock, chartData } =
-    getUnstakingOverview(unstakingSnapshots, Math.floor(Date.now() / 1000));
+    getUnstakingOverview(unstakingSnapshots, currentTimestamp);
 
   return (
     <main className="flex flex-col gap-2">
