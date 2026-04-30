@@ -9,7 +9,11 @@ import {
 } from "recharts";
 import { formatUSDValue, toHumanReadable } from "@/lib/utils";
 import { ChartEmpty } from "@/components/metrics/ChartEmpty";
-import { Payload } from "recharts/types/component/DefaultTooltipContent";
+import type {
+  NameType,
+  Payload,
+  ValueType,
+} from "recharts/types/component/DefaultTooltipContent";
 
 interface StakingChartProps {
   stakedVision: number;
@@ -24,6 +28,9 @@ interface StakingDataPoint {
   valueUSD: number;
   color: string;
 }
+
+const toTooltipNumber = (value: ValueType | undefined) =>
+  Array.isArray(value) ? Number(value[0]) : Number(value ?? 0);
 
 export const StakingChart = ({
   stakedVision,
@@ -47,12 +54,12 @@ export const StakingChart = ({
   ];
 
   const formatTooltipValue = (
-    value: number,
-    name: string,
-    props: Payload<number, string>,
+    value: ValueType | undefined,
+    name: NameType | undefined,
+    props: Payload<ValueType, NameType>,
   ) => [
-    `${toHumanReadable(value)} VSN (${formatUSDValue(props.payload.valueUSD)})`,
-    name,
+    `${toHumanReadable(toTooltipNumber(value))} VSN (${formatUSDValue(props.payload.valueUSD)})`,
+    name ?? "",
   ];
 
   const formatLegendValue = (value: string, entry: LegendPayload) => (

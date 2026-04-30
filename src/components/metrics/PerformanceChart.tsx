@@ -10,10 +10,18 @@ import {
 } from "recharts";
 import { timestampToHumanReadable } from "@/utils/time";
 import { ConvertedPerformanceSnapshot } from "@/types/svsn/converted";
+import type { ReactNode } from "react";
+import type { ValueType } from "recharts/types/component/DefaultTooltipContent";
 
 interface PerformanceChartProps {
   data: ConvertedPerformanceSnapshot[];
 }
+
+const toTooltipNumber = (value: ValueType | undefined) =>
+  Array.isArray(value) ? Number(value[0]) : Number(value ?? 0);
+
+const formatTooltipLabel = (label: ReactNode) =>
+  timestampToHumanReadable(Number(label ?? 0));
 
 export const PerformanceChart: React.FC<PerformanceChartProps> = ({ data }) => (
   <div className="h-[400px]">
@@ -23,11 +31,11 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({ data }) => (
         <XAxis dataKey="timestamp" tickFormatter={timestampToHumanReadable} />
         <YAxis yAxisId="exchange" domain={["auto", "auto"]} />
         <Tooltip
-          labelFormatter={timestampToHumanReadable}
-          formatter={(value: number, name) => [
+          labelFormatter={formatTooltipLabel}
+          formatter={(value, name) => [
             name === "Exchange Rate"
-              ? value.toFixed(4)
-              : value.toFixed(2) + "%",
+              ? toTooltipNumber(value).toFixed(4)
+              : toTooltipNumber(value).toFixed(2) + "%",
             name,
           ]}
         />

@@ -11,11 +11,19 @@ import {
 import { ChartEmpty } from "@/components/metrics/ChartEmpty";
 import { timestampToHumanReadable, toLocaleDateString } from "@/utils/time";
 import { StakingRatioDataPoint } from "@/types/api/staking";
+import type { ReactNode } from "react";
+import type {
+  NameType,
+  ValueType,
+} from "recharts/types/component/DefaultTooltipContent";
 
 interface HistoricalStakingRatioChartProps {
   data: StakingRatioDataPoint[];
   loading?: boolean;
 }
+
+const toTooltipNumber = (value: ValueType | undefined) =>
+  Array.isArray(value) ? Number(value[0]) : Number(value ?? 0);
 
 const toPercent = (decimal: number, fixed = 0) =>
   `${(decimal * 100).toFixed(fixed)}%`;
@@ -35,17 +43,27 @@ export const HistoricalStakingRatioChart = ({
     ],
   } as const;
 
-  const formatTooltipValue = (value: number, name: string, props: unknown) => {
+  const formatTooltipValue = (
+    value: ValueType | undefined,
+    name: NameType | undefined,
+    props: unknown,
+  ) => {
     const dataKey = (props as { dataKey: keyof typeof tooltipFormatters })
       .dataKey;
     const formatter = tooltipFormatters[dataKey];
-    return formatter ? formatter(value) : [value.toString(), name];
+    const numericValue = toTooltipNumber(value);
+    return formatter
+      ? formatter(numericValue)
+      : [numericValue.toString(), name ?? ""];
   };
 
   const formatXAxisLabel = (tickItem: number) => {
     const date = new Date(tickItem * 1000);
     return toLocaleDateString(date, true);
   };
+
+  const formatTooltipLabel = (label: ReactNode) =>
+    timestampToHumanReadable(Number(label ?? 0));
 
   if (loading) {
     return <ChartEmpty>Loading historical data...</ChartEmpty>;
@@ -79,7 +97,7 @@ export const HistoricalStakingRatioChart = ({
           />
           <Tooltip
             formatter={formatTooltipValue}
-            labelFormatter={timestampToHumanReadable}
+            labelFormatter={formatTooltipLabel}
             contentStyle={{
               backgroundColor: "white",
               border: "1px solid #ccc",

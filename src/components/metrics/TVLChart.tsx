@@ -11,8 +11,9 @@ import {
 import { formatUSDValue, toHumanReadable } from "@/lib/utils";
 import { timestampToHumanReadable } from "@/utils/time";
 import { ChartEmpty } from "@/components/metrics/ChartEmpty";
-import { useMemo } from "react";
+import { type ReactNode, useMemo } from "react";
 import { ConvertedTVLSnapshot } from "@/types/svsn/converted";
+import type { ValueType } from "recharts/types/component/DefaultTooltipContent";
 
 interface TVLChartProps {
   tvlSnapshots: ConvertedTVLSnapshot[];
@@ -20,13 +21,19 @@ interface TVLChartProps {
   loading?: boolean;
 }
 
+const toTooltipNumber = (value: ValueType | undefined) =>
+  Array.isArray(value) ? Number(value[0]) : Number(value ?? 0);
+
+const formatTooltipLabel = (label: ReactNode) =>
+  timestampToHumanReadable(Number(label ?? 0));
+
 export const TVLChart = ({
   tvlSnapshots,
   currentPrice,
   loading = false,
 }: TVLChartProps) => {
-  const formatTooltipValue = (value: number) => [
-    `${toHumanReadable(value)} VSN (${formatUSDValue(value * currentPrice)})`,
+  const formatTooltipValue = (value: ValueType | undefined) => [
+    `${toHumanReadable(toTooltipNumber(value))} VSN (${formatUSDValue(toTooltipNumber(value) * currentPrice)})`,
     "TVL",
   ];
 
@@ -76,7 +83,7 @@ export const TVLChart = ({
           />
           <Tooltip
             formatter={formatTooltipValue}
-            labelFormatter={timestampToHumanReadable}
+            labelFormatter={formatTooltipLabel}
             contentStyle={{
               backgroundColor: "white",
               border: "1px solid #ccc",

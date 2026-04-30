@@ -11,7 +11,8 @@ import {
 import { formatUSDValue, toHumanReadable } from "@/lib/utils";
 import { ChartEmpty } from "@/components/metrics/ChartEmpty";
 import { toLocaleDateString } from "@/utils/time";
-import { useMemo } from "react";
+import { type ReactNode, useMemo } from "react";
+import type { ValueType } from "recharts/types/component/DefaultTooltipContent";
 
 interface ChartDataPoint {
   date: string;
@@ -25,17 +26,20 @@ interface UnstakingChartProps {
   loading?: boolean;
 }
 
+const toTooltipNumber = (value: ValueType | undefined) =>
+  Array.isArray(value) ? Number(value[0]) : Number(value ?? 0);
+
 export const UnstakingChart = ({
   data,
   currentPrice,
   loading = false,
 }: UnstakingChartProps) => {
-  const formatTooltipValue = (value: number) => [
-    `${toHumanReadable(value)} sVSN (${formatUSDValue(value * currentPrice)})`,
+  const formatTooltipValue = (value: ValueType | undefined) => [
+    `${toHumanReadable(toTooltipNumber(value))} sVSN (${formatUSDValue(toTooltipNumber(value) * currentPrice)})`,
     "Unlock Amount",
   ];
-  const formatTooltipLabel = (label: string) =>
-    toLocaleDateString(new Date(label));
+  const formatTooltipLabel = (label: ReactNode) =>
+    toLocaleDateString(new Date(String(label)));
 
   // Transform data for the chart
   const chartData = useMemo(() => {

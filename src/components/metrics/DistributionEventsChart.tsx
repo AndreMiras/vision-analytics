@@ -10,11 +10,15 @@ import {
 import { ConvertedDistributeRewardsEvent } from "@/types/svsn/cycle-events";
 import { toHumanReadable } from "@/lib/utils";
 import { ChartEmpty } from "./ChartEmpty";
+import type { ValueType } from "recharts/types/component/DefaultTooltipContent";
 
 interface DistributionEventsChartProps {
   distributions: ConvertedDistributeRewardsEvent[];
   loading?: boolean;
 }
+
+const toTooltipNumber = (value: ValueType | undefined) =>
+  Array.isArray(value) ? Number(value[0]) : Number(value ?? 0);
 
 export const DistributionEventsChart = ({
   distributions,
@@ -50,8 +54,8 @@ export const DistributionEventsChart = ({
           tickFormatter={(value) => toHumanReadable(value)}
         />
         <Tooltip
-          formatter={(value: number) => [
-            `${toHumanReadable(value)} VSN`,
+          formatter={(value) => [
+            `${toHumanReadable(toTooltipNumber(value))} VSN`,
             "Rewards",
           ]}
           labelFormatter={(label) => `Date: ${label}`}
