@@ -218,4 +218,64 @@ describe("StakingOverviewPage", () => {
       loading: false,
     });
   });
+
+  it("logs overview failures while still rendering the history data", async () => {
+    const overviewError = new Error("overview failed");
+    const consoleErrorSpy = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
+    const fetchMock = vi.fn((url: string | URL | Request) => {
+      if (url === "/api/staking-overview") {
+        return Promise.reject(overviewError);
+      }
+
+      return Promise.resolve(historyResponse());
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<StakingOverviewPage />);
+
+    await waitFor(() =>
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        "Error fetching staking overview data:",
+        overviewError,
+      ),
+    );
+    await waitFor(() =>
+      expect(latestHistoricalChartProps()).toEqual({
+        data: historyData,
+        loading: false,
+      }),
+    );
+    expect(latestMetricCardsProps()).toEqual({
+      currentPrice: 0,
+      totalVision: 0,
+      stakedVision: 0,
+      unstakedVision: 0,
+      stakingRatio: 0,
+      loading: false,
+    });
+  });
+
+  it("falls back to an empty history when the response omits data", async () => {
+    const fetchMock = vi.fn((url: string | URL | Request) => {
+      if (url === "/api/staking-history") {
+        return Promise.resolve({
+          json: vi.fn().mockResolvedValue({}),
+        });
+      }
+
+      return Promise.resolve(overviewResponse());
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<StakingOverviewPage />);
+
+    await waitFor(() =>
+      expect(latestHistoricalChartProps()).toEqual({
+        data: [],
+        loading: false,
+      }),
+    );
+  });
 });

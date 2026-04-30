@@ -1,6 +1,9 @@
 import {
+  formatDuration,
   formatRelativeTime,
   formatTimeRemaining,
+  timestampToHumanReadable,
+  toLocaleDateString,
   toMilliseconds,
   toSeconds,
 } from "@/utils/time";
@@ -158,6 +161,33 @@ describe("time", () => {
       // Very small negative difference
       const slightlyPastTimestamp = refTimestamp - 1; // 1 second ago
       expect(formatTimeRemaining(slightlyPastTimestamp, ref)).toBe("Past due");
+    });
+  });
+
+  describe("formatDuration", () => {
+    it("formats days and hours when seconds >= 1 day", () => {
+      expect(formatDuration(86400 + 3600 * 2)).toBe("1d 2h");
+      expect(formatDuration(86400 * 3 + 3600 * 5)).toBe("3d 5h");
+      expect(formatDuration(86400)).toBe("1d 0h");
+    });
+
+    it("formats hours only when seconds < 1 day", () => {
+      expect(formatDuration(3600 * 5)).toBe("5h");
+      expect(formatDuration(0)).toBe("0h");
+    });
+  });
+
+  describe("timestampToHumanReadable", () => {
+    it("formats a unix timestamp as a localized date string in UTC", () => {
+      expect(timestampToHumanReadable(1_700_000_000)).toBe("Nov 14, 2023");
+    });
+  });
+
+  describe("toLocaleDateString", () => {
+    it("omits the year when compact is true", () => {
+      expect(
+        toLocaleDateString(new Date("2023-11-14T22:13:20.000Z"), true),
+      ).toBe("Nov 14");
     });
   });
 });

@@ -227,4 +227,30 @@ describe("TVLPage", () => {
       loading: false,
     });
   });
+
+  it("passes timeframeDays=null when the user selects max", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(metricsResponse(defaultSnapshots, 4))
+      .mockResolvedValueOnce(metricsResponse(defaultSnapshots, 4));
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<TVLPage />);
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+
+    await user.click(screen.getByRole("combobox"));
+    await user.click(await screen.findByRole("option", { name: "Max" }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+    expect(fetchMock).toHaveBeenLastCalledWith("/api/metrics", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        timeframe: "max",
+        type: "tvl",
+      }),
+    });
+    expect(latestMetricCardsProps()).toMatchObject({ timeframeDays: null });
+  });
 });

@@ -149,6 +149,71 @@ describe("/api/rewards-cycles route", () => {
     });
   });
 
+  it("falls back to zero averages and utilization when the ongoing cycle has no distributions", async () => {
+    const queryUrl = "https://example.test/svsn";
+    const ongoingCycle = createCycle("ongoing", {
+      rewardsCycleAmount: 0,
+      blockTimestamp: 1_000,
+      rewardsCycleEndTimestamp: 2_000,
+      status: "ongoing",
+    });
+
+    mockGetSvsnSubgraphUrl.mockReturnValue(queryUrl);
+    mockFetchRewardsCycles.mockResolvedValue([ongoingCycle]);
+    mockFetchDistributeRewards.mockResolvedValueOnce([]);
+    mockFetchVSNPrice.mockResolvedValue(0);
+
+    const response = await POST();
+
+    await expect(response.json()).resolves.toEqual({
+      data: {
+        currentCycle: {
+          cycle: ongoingCycle,
+          distributions: [],
+          totalDistributed: 0,
+          remainingBudget: 0,
+          distributionCount: 0,
+          averageDistribution: 0,
+          utilizationPercent: 0,
+        },
+        historicalAverage: null,
+        currentPrice: 0,
+      },
+    });
+  });
+
+  it("returns zero average distribution when completed cycles have no distributions", async () => {
+    const queryUrl = "https://example.test/svsn";
+    const completedCycle = createCycle("completed", {
+      blockTimestamp: 100,
+      rewardsCycleEndTimestamp: 200,
+      duration: 100,
+      status: "completed",
+      progressPercent: 100,
+      timeRemaining: 0,
+    });
+
+    mockGetSvsnSubgraphUrl.mockReturnValue(queryUrl);
+    mockFetchRewardsCycles.mockResolvedValue([completedCycle]);
+    mockFetchDistributeRewards
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([]);
+    mockFetchVSNPrice.mockResolvedValue(0);
+
+    const response = await POST();
+
+    await expect(response.json()).resolves.toMatchObject({
+      data: {
+        historicalAverage: {
+          cycleDuration: 100,
+          totalDistributed: 0,
+          distributionCount: 0,
+          averageDistribution: 0,
+        },
+      },
+    });
+  });
+
   it("returns empty analytics when no cycles are available", async () => {
     const queryUrl = "https://example.test/svsn";
 

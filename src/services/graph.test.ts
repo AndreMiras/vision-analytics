@@ -323,6 +323,25 @@ describe("graph services", () => {
       expect(result).toHaveLength(PAGE_SIZE + 2);
       expect(result.at(-1)?.id).toBe(`cycle-${PAGE_SIZE + 1}`);
     });
+
+    it("logs and stops paginating when the response has no data field", async () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date(1_700_000_000 * 1000));
+      const consoleErrorSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => undefined);
+
+      mockFetchResponses({});
+
+      const result = await fetchRewardsCycles("https://example.test/svsn", 10);
+
+      expect(result).toEqual([]);
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        "GraphQL error or missing data:",
+        {},
+      );
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe("fetchDistributeRewards", () => {
@@ -372,6 +391,23 @@ describe("graph services", () => {
         txHash: "0xreward1001",
         rewards: 1002,
       });
+    });
+
+    it("logs and stops paginating when the response has no data field", async () => {
+      const consoleErrorSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => undefined);
+
+      mockFetchResponses({});
+
+      const result = await fetchDistributeRewards("https://example.test/svsn");
+
+      expect(result).toEqual([]);
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        "GraphQL error or missing data:",
+        {},
+      );
+      expect(fetchMock).toHaveBeenCalledTimes(1);
     });
   });
 
