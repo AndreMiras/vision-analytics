@@ -13,6 +13,15 @@ export interface CycleAnalytics {
   utilizationPercent: number;
 }
 
+export interface RewardsCycleSummary {
+  cycle: ConvertedRewardsCycle;
+  totalDistributed: number;
+  remainingBudget: number;
+  distributionCount: number;
+  averageDistribution: number;
+  utilizationPercent: number;
+}
+
 export interface RewardsCyclesResponse {
   currentCycle: CycleAnalytics | null;
   historicalAverage: {
@@ -22,4 +31,5 @@ export interface RewardsCyclesResponse {
     averageDistribution: number;
   } | null;
   currentPrice: number;
+  cycles: RewardsCycleSummary[];
 }

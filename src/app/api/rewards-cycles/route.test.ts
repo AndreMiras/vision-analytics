@@ -85,18 +85,15 @@ describe("/api/rewards-cycles route", () => {
       progressPercent: 100,
       timeRemaining: 0,
     });
-    const currentDistributions = [
-      createDistribution("before-current", 999, 5),
-      createDistribution("current-1", 1_100, 10),
-      createDistribution("current-2", 1_200, 15),
-      createDistribution("after-current", 2_001, 20),
-    ];
-    const historicalDistributions = [
+    const distributions = [
       createDistribution("completed-1-a", 300, 10),
       createDistribution("completed-1-b", 400, 20),
       createDistribution("between-cycles", 550, 30),
       createDistribution("completed-2-a", 700, 40),
-      createDistribution("after-completed", 950, 50),
+      createDistribution("before-current", 999, 5),
+      createDistribution("current-1", 1_100, 10),
+      createDistribution("current-2", 1_200, 15),
+      createDistribution("after-current", 2_001, 20),
     ];
 
     mockGetSvsnSubgraphUrl.mockReturnValue(queryUrl);
@@ -105,22 +102,15 @@ describe("/api/rewards-cycles route", () => {
       ongoingCycle,
       secondCompletedCycle,
     ]);
-    mockFetchDistributeRewards
-      .mockResolvedValueOnce(currentDistributions)
-      .mockResolvedValueOnce(historicalDistributions);
+    mockFetchDistributeRewards.mockResolvedValueOnce(distributions);
     mockFetchVSNPrice.mockResolvedValue(0.42);
 
     const response = await POST();
 
     expect(response.status).toBe(200);
     expect(mockFetchRewardsCycles).toHaveBeenCalledWith(queryUrl, 10);
-    expect(mockFetchDistributeRewards).toHaveBeenNthCalledWith(
-      1,
-      queryUrl,
-      ongoingCycle.blockTimestamp,
-    );
-    expect(mockFetchDistributeRewards).toHaveBeenNthCalledWith(
-      2,
+    expect(mockFetchDistributeRewards).toHaveBeenCalledOnce();
+    expect(mockFetchDistributeRewards).toHaveBeenCalledWith(
       queryUrl,
       firstCompletedCycle.blockTimestamp,
     );
@@ -145,6 +135,32 @@ describe("/api/rewards-cycles route", () => {
           averageDistribution: 70 / 3,
         },
         currentPrice: 0.42,
+        cycles: [
+          {
+            cycle: firstCompletedCycle,
+            totalDistributed: 30,
+            remainingBudget: 20,
+            distributionCount: 2,
+            averageDistribution: 15,
+            utilizationPercent: 60,
+          },
+          {
+            cycle: ongoingCycle,
+            totalDistributed: 25,
+            remainingBudget: 75,
+            distributionCount: 2,
+            averageDistribution: 12.5,
+            utilizationPercent: 25,
+          },
+          {
+            cycle: secondCompletedCycle,
+            totalDistributed: 40,
+            remainingBudget: 35,
+            distributionCount: 1,
+            averageDistribution: 40,
+            utilizationPercent: (40 / 75) * 100,
+          },
+        ],
       },
     });
   });
@@ -178,6 +194,16 @@ describe("/api/rewards-cycles route", () => {
         },
         historicalAverage: null,
         currentPrice: 0,
+        cycles: [
+          {
+            cycle: ongoingCycle,
+            totalDistributed: 0,
+            remainingBudget: 0,
+            distributionCount: 0,
+            averageDistribution: 0,
+            utilizationPercent: 0,
+          },
+        ],
       },
     });
   });
@@ -195,9 +221,7 @@ describe("/api/rewards-cycles route", () => {
 
     mockGetSvsnSubgraphUrl.mockReturnValue(queryUrl);
     mockFetchRewardsCycles.mockResolvedValue([completedCycle]);
-    mockFetchDistributeRewards
-      .mockResolvedValueOnce([])
-      .mockResolvedValueOnce([]);
+    mockFetchDistributeRewards.mockResolvedValueOnce([]);
     mockFetchVSNPrice.mockResolvedValue(0);
 
     const response = await POST();
@@ -210,6 +234,16 @@ describe("/api/rewards-cycles route", () => {
           distributionCount: 0,
           averageDistribution: 0,
         },
+        cycles: [
+          {
+            cycle: completedCycle,
+            totalDistributed: 0,
+            remainingBudget: 100,
+            distributionCount: 0,
+            averageDistribution: 0,
+            utilizationPercent: 0,
+          },
+        ],
       },
     });
   });
@@ -231,6 +265,7 @@ describe("/api/rewards-cycles route", () => {
         currentCycle: null,
         historicalAverage: null,
         currentPrice: 0.51,
+        cycles: [],
       },
     });
   });

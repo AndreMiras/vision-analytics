@@ -6,6 +6,7 @@ import { CycleProgressCard } from "@/components/metrics/CycleProgressCard";
 import { CycleMetricCards } from "@/components/metrics/CycleMetricCards";
 import { DistributionEventsChart } from "@/components/metrics/DistributionEventsChart";
 import { CycleHistoricalComparison } from "@/components/metrics/CycleHistoricalComparison";
+import { RewardsCyclesList } from "@/components/metrics/RewardsCyclesList";
 import { RewardsCyclesResponse } from "@/types/api/rewards-cycles";
 import { ResponsiveCardContent } from "@/components/ui/responsive-card";
 
@@ -35,22 +36,9 @@ export default function RewardsCyclesPage() {
     fetchData();
   }, []);
 
-  if (loading || !data?.currentCycle) {
-    return (
-      <main className="flex flex-col gap-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Current Rewards Cycle</CardTitle>
-          </CardHeader>
-          <ResponsiveCardContent>
-            <div className="text-center py-8 text-gray-500">
-              {loading ? "Loading cycle data..." : "No active cycle found"}
-            </div>
-          </ResponsiveCardContent>
-        </Card>
-      </main>
-    );
-  }
+  const currentCycle = data?.currentCycle ?? null;
+  const cycles = data?.cycles ?? [];
+  const currentPrice = data?.currentPrice ?? 0;
 
   return (
     <main className="flex flex-col gap-2">
@@ -59,28 +47,48 @@ export default function RewardsCyclesPage() {
           <CardTitle>Current Rewards Cycle</CardTitle>
         </CardHeader>
         <ResponsiveCardContent>
-          <CycleProgressCard
-            cycle={data.currentCycle.cycle}
-            loading={loading}
-          />
-          <div className="mt-6">
-            <CycleMetricCards
-              analytics={data.currentCycle}
-              currentPrice={data.currentPrice}
-              loading={loading}
-            />
-          </div>
-          <CycleHistoricalComparison data={data} loading={loading} />
+          {data && currentCycle ? (
+            <>
+              <CycleProgressCard cycle={currentCycle.cycle} loading={loading} />
+              <div className="mt-6">
+                <CycleMetricCards
+                  analytics={currentCycle}
+                  currentPrice={currentPrice}
+                  loading={loading}
+                />
+              </div>
+              <CycleHistoricalComparison data={data} loading={loading} />
+            </>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              {loading ? "Loading cycle data..." : "No active cycle found"}
+            </div>
+          )}
         </ResponsiveCardContent>
       </Card>
 
+      {currentCycle ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Distribution Events</CardTitle>
+          </CardHeader>
+          <ResponsiveCardContent>
+            <DistributionEventsChart
+              distributions={currentCycle.distributions}
+              loading={loading}
+            />
+          </ResponsiveCardContent>
+        </Card>
+      ) : null}
+
       <Card>
         <CardHeader>
-          <CardTitle>Distribution Events</CardTitle>
+          <CardTitle>Rewards Cycles</CardTitle>
         </CardHeader>
         <ResponsiveCardContent>
-          <DistributionEventsChart
-            distributions={data.currentCycle.distributions}
+          <RewardsCyclesList
+            cycles={cycles}
+            currentPrice={currentPrice}
             loading={loading}
           />
         </ResponsiveCardContent>

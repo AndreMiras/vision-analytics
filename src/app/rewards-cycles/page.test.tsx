@@ -9,6 +9,7 @@ import type { CycleProgressCard } from "@/components/metrics/CycleProgressCard";
 import type { CycleMetricCards } from "@/components/metrics/CycleMetricCards";
 import type { CycleHistoricalComparison } from "@/components/metrics/CycleHistoricalComparison";
 import type { DistributionEventsChart } from "@/components/metrics/DistributionEventsChart";
+import type { RewardsCyclesList } from "@/components/metrics/RewardsCyclesList";
 import type { RewardsCyclesResponse } from "@/types/api/rewards-cycles";
 
 type CycleProgressCardProps = ComponentProps<typeof CycleProgressCard>;
@@ -19,11 +20,13 @@ type CycleHistoricalComparisonProps = ComponentProps<
 type DistributionEventsChartProps = ComponentProps<
   typeof DistributionEventsChart
 >;
+type RewardsCyclesListProps = ComponentProps<typeof RewardsCyclesList>;
 
 const progressCardSpy = vi.fn();
 const metricCardsSpy = vi.fn();
 const historicalSpy = vi.fn();
 const distributionsSpy = vi.fn();
+const rewardsCyclesListSpy = vi.fn();
 
 vi.mock("@/components/metrics/CycleProgressCard", () => ({
   CycleProgressCard: (props: CycleProgressCardProps) => {
@@ -50,6 +53,13 @@ vi.mock("@/components/metrics/DistributionEventsChart", () => ({
   DistributionEventsChart: (props: DistributionEventsChartProps) => {
     distributionsSpy(props);
     return <div data-testid="distribution-events-chart" />;
+  },
+}));
+
+vi.mock("@/components/metrics/RewardsCyclesList", () => ({
+  RewardsCyclesList: (props: RewardsCyclesListProps) => {
+    rewardsCyclesListSpy(props);
+    return <div data-testid="rewards-cycles-list" />;
   },
 }));
 
@@ -94,6 +104,27 @@ const populatedResponse: RewardsCyclesResponse = {
     averageDistribution: 100,
   },
   currentPrice: 0.42,
+  cycles: [
+    {
+      cycle: {
+        id: "cycle-1",
+        rewardsCycleAmount: 1_000,
+        rewardsCycleEndTimestamp: 1_800_100_000,
+        newBpsYieldCapPerSecond: 0.000001,
+        blockTimestamp: 1_800_000_000,
+        transactionHash: "0xcycle",
+        duration: 100_000,
+        status: "ongoing",
+        progressPercent: 50,
+        timeRemaining: 50_000,
+      },
+      totalDistributed: 250,
+      remainingBudget: 750,
+      distributionCount: 2,
+      averageDistribution: 125,
+      utilizationPercent: 25,
+    },
+  ],
 };
 
 const jsonResponse = (body: unknown) => ({
@@ -106,6 +137,7 @@ describe("RewardsCyclesPage", () => {
     metricCardsSpy.mockClear();
     historicalSpy.mockClear();
     distributionsSpy.mockClear();
+    rewardsCyclesListSpy.mockClear();
   });
 
   afterEach(() => {
@@ -132,14 +164,35 @@ describe("RewardsCyclesPage", () => {
     expect(
       screen.queryByTestId("distribution-events-chart"),
     ).not.toBeInTheDocument();
+    expect(screen.getByTestId("rewards-cycles-list")).toBeInTheDocument();
+    expect(rewardsCyclesListSpy).toHaveBeenLastCalledWith({
+      cycles: [],
+      currentPrice: 0,
+      loading: true,
+    });
 
-    resolveFetch?.(jsonResponse({ data: null }));
+    resolveFetch?.(
+      jsonResponse({
+        data: {
+          currentCycle: null,
+          historicalAverage: null,
+          currentPrice: 0,
+          cycles: [],
+        },
+      }),
+    );
   });
 
-  it("renders the no-cycle empty state when the response has no currentCycle", async () => {
+  it("renders the no-cycle empty state and cycle summaries when the response has no currentCycle", async () => {
+    const cycleSummaries = populatedResponse.cycles;
     const fetchMock = vi.fn().mockResolvedValue(
       jsonResponse({
-        data: { currentCycle: null, historicalAverage: null, currentPrice: 0 },
+        data: {
+          currentCycle: null,
+          historicalAverage: null,
+          currentPrice: 0.42,
+          cycles: cycleSummaries,
+        },
       }),
     );
     vi.stubGlobal("fetch", fetchMock);
@@ -162,6 +215,12 @@ describe("RewardsCyclesPage", () => {
     expect(
       screen.queryByTestId("distribution-events-chart"),
     ).not.toBeInTheDocument();
+    expect(screen.getByTestId("rewards-cycles-list")).toBeInTheDocument();
+    expect(rewardsCyclesListSpy).toHaveBeenLastCalledWith({
+      cycles: cycleSummaries,
+      currentPrice: 0.42,
+      loading: false,
+    });
   });
 
   it("passes populated cycle data to each child section", async () => {
@@ -193,6 +252,11 @@ describe("RewardsCyclesPage", () => {
       distributions: populatedResponse.currentCycle!.distributions,
       loading: false,
     });
+    expect(rewardsCyclesListSpy).toHaveBeenLastCalledWith({
+      cycles: populatedResponse.cycles,
+      currentPrice: 0.42,
+      loading: false,
+    });
   });
 
   it("logs failed requests and falls back to the no-cycle state", async () => {
@@ -211,5 +275,10 @@ describe("RewardsCyclesPage", () => {
       ),
     );
     expect(screen.getByText("No active cycle found")).toBeInTheDocument();
+    expect(rewardsCyclesListSpy).toHaveBeenLastCalledWith({
+      cycles: [],
+      currentPrice: 0,
+      loading: false,
+    });
   });
 });
