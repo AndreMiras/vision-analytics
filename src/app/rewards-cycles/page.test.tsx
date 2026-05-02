@@ -155,7 +155,12 @@ describe("RewardsCyclesPage", () => {
 
     render(<RewardsCyclesPage />);
 
-    expect(screen.getByText("Loading cycle data...")).toBeInTheDocument();
+    expect(
+      screen.getByTestId("current-rewards-cycle-skeleton"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByTestId("distribution-events-skeleton"),
+    ).toBeInTheDocument();
     expect(screen.queryByTestId("cycle-progress-card")).not.toBeInTheDocument();
     expect(screen.queryByTestId("cycle-metric-cards")).not.toBeInTheDocument();
     expect(
